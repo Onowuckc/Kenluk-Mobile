@@ -12,12 +12,13 @@ import {
   ImageBackground,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../src/redux/slices/authSlice';
 import { authApi } from '../../src/services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
+import { RootState } from '../../src/redux/store';
 
 const logoImg = require('../../assets/kenluk1.png');
 const backgroundImg = require('../../assets/images/Procurement 3.jpg');
@@ -25,6 +26,21 @@ const backgroundImg = require('../../assets/images/Procurement 3.jpg');
 export default function LoginScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
+
+  const themeMode = useSelector((state: RootState) => state.theme.mode);
+  const isDark = themeMode === 'dark';
+
+  // Dynamic Theme Helpers
+  const bgMain = isDark ? 'bg-[#080F26]' : 'bg-slate-900';
+  const bgCard = isDark ? 'bg-[#0F1E43]/90' : 'bg-white';
+  const borderCard = isDark ? 'border-[#1E356A]/60' : 'border-slate-100';
+  const textTitle = isDark ? 'text-white' : 'text-slate-900';
+  const textMuted = isDark ? 'text-slate-400' : 'text-slate-700';
+  const inputBg = isDark ? 'bg-[#121E42]' : 'bg-white';
+  const inputBorder = isDark ? 'border-[#1F3978]' : 'border-slate-200';
+  const textInputColor = isDark ? 'text-white' : 'text-slate-900';
+  const textLink = isDark ? 'text-blue-400' : 'text-blue-600';
+  const borderDivider = isDark ? 'border-blue-950/40' : 'border-slate-100';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,7 +50,7 @@ export default function LoginScreen() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string; twoFactor?: string }>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
     const newErrors: typeof errors = {};
@@ -111,22 +127,22 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-950" edges={[]}>
+    <SafeAreaView className={`flex-1 ${bgMain}`} edges={[]}>
       <ImageBackground
         source={backgroundImg}
         resizeMode="cover"
         className="flex-1"
-        imageStyle={{ opacity: 0.3 }}
+        imageStyle={{ opacity: isDark ? 0.15 : 0.3 }}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
         >
-          <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="p-6 justify-center">
-            <View className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 max-w-sm w-full self-center">
+          <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} className="p-6">
+            <View className={`rounded-3xl shadow-2xl overflow-hidden border max-w-sm w-full self-center ${bgCard} ${borderCard}`}>
               {/* Header banner */}
               <LinearGradient
-                colors={['#1E3A8A', '#1D4ED8']}
+                colors={isDark ? ['#1E3A8A', '#0F1E43'] : ['#1E3A8A', '#1D4ED8']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 className="px-6 py-8 items-center relative"
@@ -152,19 +168,19 @@ export default function LoginScreen() {
                   <View className="space-y-4">
                     {/* Email Input */}
                     <View>
-                      <Text className="text-xs font-semibold text-slate-700 mb-1.5">Email Address</Text>
-                      <View className={`flex-row items-center bg-white border ${errors.email ? 'border-red-400' : focusedField === 'email' ? 'border-blue-500' : 'border-slate-200'} rounded-xl px-3.5 py-0.5`}>
-                        <Feather name="mail" size={16} color={focusedField === 'email' ? '#2563EB' : '#94A3B8'} className="mr-2" />
+                      <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>Email Address</Text>
+                      <View className={`flex-row items-center ${inputBg} border ${errors.email ? 'border-red-400' : focusedField === 'email' ? 'border-blue-500' : inputBorder} rounded-xl px-3.5 py-0.5`}>
+                        <Feather name="mail" size={16} color={focusedField === 'email' ? '#3B82F6' : (isDark ? '#475569' : '#94A3B8')} style={{ marginRight: 8 }} />
                         <TextInput
                           value={email}
                           onChangeText={setEmail}
                           onFocus={() => setFocusedField('email')}
                           onBlur={() => setFocusedField(null)}
                           placeholder="you@company.com"
-                          placeholderTextColor="#94A3B8"
+                          placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                           autoCapitalize="none"
                           keyboardType="email-address"
-                          className="flex-1 text-slate-900 text-sm py-2.5"
+                          className={`flex-1 ${textInputColor} text-sm py-2.5`}
                         />
                       </View>
                       {errors.email && <Text className="text-red-500 text-[10px] mt-1">{errors.email}</Text>}
@@ -172,22 +188,22 @@ export default function LoginScreen() {
 
                     {/* Password Input */}
                     <View>
-                      <Text className="text-xs font-semibold text-slate-700 mb-1.5">Password</Text>
-                      <View className={`flex-row items-center bg-white border ${errors.password ? 'border-red-400' : focusedField === 'password' ? 'border-blue-500' : 'border-slate-200'} rounded-xl px-3.5 py-0.5`}>
-                        <Feather name="key" size={16} color={focusedField === 'password' ? '#2563EB' : '#94A3B8'} className="mr-2" />
+                      <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>Password</Text>
+                      <View className={`flex-row items-center ${inputBg} border ${errors.password ? 'border-red-400' : focusedField === 'password' ? 'border-blue-500' : inputBorder} rounded-xl px-3.5 py-0.5`}>
+                        <Feather name="key" size={16} color={focusedField === 'password' ? '#3B82F6' : (isDark ? '#475569' : '#94A3B8')} style={{ marginRight: 8 }} />
                         <TextInput
                           value={password}
                           onChangeText={setPassword}
                           onFocus={() => setFocusedField('password')}
                           onBlur={() => setFocusedField(null)}
                           placeholder="Enter your password"
-                          placeholderTextColor="#94A3B8"
+                          placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                           secureTextEntry={!showPassword}
                           autoCapitalize="none"
-                          className="flex-1 text-slate-900 text-sm py-2.5"
+                          className={`flex-1 ${textInputColor} text-sm py-2.5`}
                         />
                         <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="p-1">
-                          <Feather name={showPassword ? "eye-off" : "eye"} size={16} color="#64748B" />
+                          <Feather name={showPassword ? "eye-off" : "eye"} size={16} color={isDark ? '#60A5FA' : '#64748B'} />
                         </TouchableOpacity>
                       </View>
                       {errors.password && <Text className="text-red-500 text-[10px] mt-1">{errors.password}</Text>}
@@ -195,33 +211,33 @@ export default function LoginScreen() {
 
                     {/* Forgot Password */}
                     <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')} className="self-end py-1">
-                      <Text className="text-xs text-blue-600 font-semibold">Forgot Password?</Text>
+                      <Text className={`text-xs ${textLink} font-semibold`}>Forgot Password?</Text>
                     </TouchableOpacity>
                   </View>
                 ) : (
                   <View className="space-y-4">
                     {/* 2FA Input */}
                     <View>
-                      <Text className="text-xs font-semibold text-slate-700 mb-1.5">6-Digit 2FA Code</Text>
-                      <View className={`flex-row items-center bg-white border ${errors.twoFactor ? 'border-red-400' : focusedField === '2fa' ? 'border-blue-500' : 'border-slate-200'} rounded-xl px-3.5 py-0.5`}>
-                        <Feather name="shield" size={16} color={focusedField === '2fa' ? '#2563EB' : '#94A3B8'} className="mr-2" />
+                      <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>6-Digit 2FA Code</Text>
+                      <View className={`flex-row items-center ${inputBg} border ${errors.twoFactor ? 'border-red-400' : focusedField === '2fa' ? 'border-blue-500' : inputBorder} rounded-xl px-3.5 py-0.5`}>
+                        <Feather name="shield" size={16} color={focusedField === '2fa' ? '#3B82F6' : (isDark ? '#475569' : '#94A3B8')} style={{ marginRight: 8 }} />
                         <TextInput
                           value={twoFactorCode}
                           onChangeText={setTwoFactorCode}
                           onFocus={() => setFocusedField('2fa')}
                           onBlur={() => setFocusedField(null)}
                           placeholder="123456"
-                          placeholderTextColor="#94A3B8"
+                          placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                           keyboardType="number-pad"
                           maxLength={6}
-                          className="flex-1 text-slate-900 text-sm py-2.5 font-bold tracking-widest text-center"
+                          className={`flex-1 ${textInputColor} text-sm py-2.5 font-bold tracking-widest text-center`}
                         />
                       </View>
                       {errors.twoFactor && <Text className="text-red-500 text-[10px] mt-1">{errors.twoFactor}</Text>}
                     </View>
 
                     <TouchableOpacity onPress={() => setTwoFactorMode(false)} className="py-1">
-                      <Text className="text-xs text-blue-600 font-semibold">Back to password login</Text>
+                      <Text className={`text-xs ${textLink} font-semibold`}>Back to password login</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -235,7 +251,7 @@ export default function LoginScreen() {
                   {isLoading ? (
                     <ActivityIndicator size="small" color="#ffffff" className="mr-2" />
                   ) : (
-                    <Feather name="log-in" size={16} color="#ffffff" className="mr-2" />
+                    <Feather name="log-in" size={16} color="#ffffff" style={{ marginRight: 8 }} />
                   )}
                   <Text className="text-white font-bold text-sm">
                     {twoFactorMode ? 'Verify 2FA' : 'Sign In'}
@@ -243,10 +259,10 @@ export default function LoginScreen() {
                 </TouchableOpacity>
 
                 {/* Footer switcher */}
-                <View className="flex-row justify-center mt-6 border-t border-slate-100 pt-4">
-                  <Text className="text-xs text-slate-500">New to Kenluk Pay? </Text>
+                <View className={`flex-row justify-center mt-6 border-t ${borderDivider} pt-4`}>
+                  <Text className={`text-xs ${textMuted}`}>New to Kenluk Pay? </Text>
                   <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
-                    <Text className="text-xs text-blue-600 font-bold">Create an Account</Text>
+                    <Text className={`text-xs ${textLink} font-bold`}>Create an Account</Text>
                   </TouchableOpacity>
                 </View>
               </View>

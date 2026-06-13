@@ -2,11 +2,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface User {
   id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   role: 'admin' | 'user';
-  verificationStatus: 'pending' | 'verified' | 'rejected';
+  accountStatus: 'pending' | 'approved' | 'rejected';
+  accountType?: 'customer' | 'company';
+  isVerified?: boolean;
+  documentsSubmitted?: string[];
+  twoFactorEnabled?: boolean;
   phoneNumber?: string;
 }
 
@@ -37,8 +40,16 @@ const authSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
+    updateUser: (state, action: PayloadAction<User>) => {
+      if (state.user) {
+        state.user = {
+          ...state.user,
+          ...action.payload,
+        };
+      }
+    },
   },
 });
 
-export const { login, logout, setLoading } = authSlice.actions;
+export const { login, logout, setLoading, updateUser } = authSlice.actions;
 export default authSlice.reducer;

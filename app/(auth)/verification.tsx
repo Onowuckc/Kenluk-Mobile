@@ -9,20 +9,34 @@ import {
   Platform,
   ScrollView,
   ImageBackground,
-  Image,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { authApi } from '../../src/services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../src/redux/store';
 
-const logoImg = require('../../assets/splash-icon.png');
 const backgroundImg = require('../../assets/images/Procurement 3.jpg');
 
 export default function VerificationScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ email: string; fromForgot?: string }>();
+
+  const themeMode = useSelector((state: RootState) => state.theme.mode);
+  const isDark = themeMode === 'dark';
+
+  // Dynamic Theme Helpers
+  const bgMain = isDark ? 'bg-[#080F26]' : 'bg-slate-900';
+  const bgCard = isDark ? 'bg-[#0F1E43]/90' : 'bg-white';
+  const borderCard = isDark ? 'border-[#1E356A]/60' : 'border-slate-100';
+  const textTitle = isDark ? 'text-white' : 'text-slate-900';
+  const textMuted = isDark ? 'text-slate-400' : 'text-slate-700';
+  const inputBg = isDark ? 'bg-[#121E42]' : 'bg-white';
+  const inputBorder = isDark ? 'border-[#1F3978]' : 'border-slate-200';
+  const textInputColor = isDark ? 'text-white' : 'text-slate-900';
+  const textLink = isDark ? 'text-blue-400' : 'text-blue-600';
 
   const email = params.email || '';
   const isForgotMode = params.fromForgot === 'true';
@@ -32,6 +46,7 @@ export default function VerificationScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   
   const [isLoading, setIsLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const handleVerify = async () => {
@@ -97,22 +112,22 @@ export default function VerificationScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-950" edges={[]}>
+    <SafeAreaView className={`flex-1 ${bgMain}`} edges={[]}>
       <ImageBackground
         source={backgroundImg}
         resizeMode="cover"
         className="flex-1"
-        imageStyle={{ opacity: 0.3 }}
+        imageStyle={{ opacity: isDark ? 0.15 : 0.3 }}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
         >
-          <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="p-6 justify-center">
-            <View className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 max-w-sm w-full self-center">
+          <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} className="p-6">
+            <View className={`rounded-3xl shadow-2xl overflow-hidden border max-w-sm w-full self-center ${bgCard} ${borderCard}`}>
               {/* Header banner */}
               <LinearGradient
-                colors={['#1E3A8A', '#1D4ED8']}
+                colors={isDark ? ['#1E3A8A', '#0F1E43'] : ['#1E3A8A', '#1D4ED8']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 className="px-6 py-8 items-center relative"
@@ -129,16 +144,6 @@ export default function VerificationScreen() {
               </LinearGradient>
 
               <View className="p-6">
-                {/* Logo and branding title */}
-                <View className="items-center mb-6">
-                  <Image 
-                    source={logoImg} 
-                    className="w-12 h-12 rounded-2xl mb-1" 
-                    resizeMode="contain" 
-                  />
-                  <Text className="text-sm font-bold text-slate-800">KENLUK PAY</Text>
-                </View>
-
                 {status && (
                   <View className={`p-3.5 rounded-xl mb-4 border flex-row items-center space-x-2 ${status.type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
                     <Feather name={status.type === 'success' ? 'check-circle' : 'alert-circle'} size={16} color={status.type === 'success' ? '#059669' : '#EF4444'} />
@@ -151,17 +156,19 @@ export default function VerificationScreen() {
                 <View className="space-y-4">
                   {/* OTP Input */}
                   <View>
-                    <Text className="text-xs font-semibold text-slate-700 mb-1.5">Verification Code</Text>
-                    <View className="flex-row items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-1">
-                      <Feather name="key" size={16} color="#94A3B8" className="mr-2" />
+                    <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>Verification Code</Text>
+                    <View className={`flex-row items-center ${inputBg} border ${focusedField === 'otp' ? 'border-blue-500' : inputBorder} rounded-xl px-3.5 py-0.5`}>
+                      <Feather name="key" size={16} color={focusedField === 'otp' ? '#3B82F6' : (isDark ? '#475569' : '#94A3B8')} style={{ marginRight: 8 }} />
                       <TextInput
                         value={otpCode}
                         onChangeText={setOtpCode}
+                        onFocus={() => setFocusedField('otp')}
+                        onBlur={() => setFocusedField(null)}
                         placeholder="Enter 6-digit OTP"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                         keyboardType="number-pad"
                         maxLength={6}
-                        className="flex-1 text-slate-900 text-sm py-2.5 font-bold tracking-widest text-center"
+                        className={`flex-1 ${textInputColor} text-sm py-2.5 font-bold tracking-widest text-center`}
                       />
                     </View>
                   </View>
@@ -170,33 +177,37 @@ export default function VerificationScreen() {
                   {isForgotMode && (
                     <>
                       <View>
-                        <Text className="text-xs font-semibold text-slate-700 mb-1.5">New Password</Text>
-                        <View className="flex-row items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-1">
-                          <Feather name="lock" size={16} color="#94A3B8" className="mr-2" />
+                        <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>New Password</Text>
+                        <View className={`flex-row items-center ${inputBg} border ${focusedField === 'newPassword' ? 'border-blue-500' : inputBorder} rounded-xl px-3.5 py-0.5`}>
+                          <Feather name="lock" size={16} color={focusedField === 'newPassword' ? '#3B82F6' : (isDark ? '#475569' : '#94A3B8')} style={{ marginRight: 8 }} />
                           <TextInput
                             value={newPassword}
                             onChangeText={setNewPassword}
+                            onFocus={() => setFocusedField('newPassword')}
+                            onBlur={() => setFocusedField(null)}
                             placeholder="At least 6 characters"
-                            placeholderTextColor="#94A3B8"
+                            placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                             secureTextEntry
                             autoCapitalize="none"
-                            className="flex-1 text-slate-900 text-sm py-2.5"
+                            className={`flex-1 ${textInputColor} text-sm py-2.5`}
                           />
                         </View>
                       </View>
 
                       <View>
-                        <Text className="text-xs font-semibold text-slate-700 mb-1.5">Confirm New Password</Text>
-                        <View className="flex-row items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-1">
-                          <Feather name="lock" size={16} color="#94A3B8" className="mr-2" />
+                        <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>Confirm New Password</Text>
+                        <View className={`flex-row items-center ${inputBg} border ${focusedField === 'confirmPassword' ? 'border-blue-500' : inputBorder} rounded-xl px-3.5 py-0.5`}>
+                          <Feather name="lock" size={16} color={focusedField === 'confirmPassword' ? '#3B82F6' : (isDark ? '#475569' : '#94A3B8')} style={{ marginRight: 8 }} />
                           <TextInput
                             value={confirmPassword}
                             onChangeText={setConfirmPassword}
+                            onFocus={() => setFocusedField('confirmPassword')}
+                            onBlur={() => setFocusedField(null)}
                             placeholder="Confirm new password"
-                            placeholderTextColor="#94A3B8"
+                            placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                             secureTextEntry
                             autoCapitalize="none"
-                            className="flex-1 text-slate-900 text-sm py-2.5"
+                            className={`flex-1 ${textInputColor} text-sm py-2.5`}
                           />
                         </View>
                       </View>
@@ -218,12 +229,12 @@ export default function VerificationScreen() {
 
                 {!isForgotMode && (
                   <TouchableOpacity onPress={handleResendOtp} className="mt-4 items-center py-2">
-                    <Text className="text-xs text-blue-600 font-bold">Resend Verification Code</Text>
+                    <Text className={`text-xs ${textLink} font-bold`}>Resend Verification Code</Text>
                   </TouchableOpacity>
                 )}
 
                 <TouchableOpacity onPress={() => router.replace('/(auth)/login')} className="mt-2 items-center py-2">
-                  <Text className="text-xs text-slate-500 font-semibold">Back to Sign In</Text>
+                  <Text className={`text-xs ${textMuted} font-semibold`}>Back to Sign In</Text>
                 </TouchableOpacity>
               </View>
             </View>

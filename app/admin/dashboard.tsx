@@ -1,186 +1,355 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
+  RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
+import { useQuery } from '@tanstack/react-query';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons, Feather } from '@expo/vector-icons';
+
 import { logout } from '../../src/redux/slices/authSlice';
 import { RootState } from '../../src/redux/store';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { adminApi } from '../../src/services/api';
-
-interface PendingRequest {
-  id: string;
-  userName: string;
-  type: string;
-  amount?: number;
-  details: string;
-  date: string;
-}
+import { toggleTheme } from '../../src/redux/slices/themeSlice';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
+  
+  const themeMode = useSelector((state: RootState) => state.theme.mode);
+  const isDark = themeMode === 'dark';
 
-  const [activeTab, setActiveTab] = useState<'payments' | 'kyc'>('payments');
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<PendingRequest[]>([]);
+  // Theme-based inline styling helpers
+  const bgMain = isDark ? '#080F26' : '#F8FAFC';
+  const bgCard = isDark ? '#0F1E43' : '#ffffff';
+  const borderCard = isDark ? '#1E356A' : '#F1F5F9';
+  const textTitle = isDark ? '#ffffff' : '#0F172A';
+  const textMuted = isDark ? '#94A3B8' : '#64748B';
+  const textLight = isDark ? '#60A5FA' : '#1E3A8A';
+  const bgMuted = isDark ? '#152757' : '#F8FAFC';
+  const borderMuted = isDark ? '#1F3978' : '#F8FAFC';
+  const shadowColor = isDark ? '#000000' : '#94A3B8';
 
-  const loadPendingItems = async () => {
-    setLoading(true);
-    try {
-      // Mock loading data from backend administration service
-      setTimeout(() => {
-        if (activeTab === 'payments') {
-          setData([
-            { id: '1', userName: 'John Doe', type: 'Funding Request', amount: 125000, details: 'Virtual Wallet credit via bank transfer', date: '2026-06-11' },
-            { id: '2', userName: 'Alice Smith', type: 'Payout Request', amount: 45000, details: 'Withdrawal to GTBank', date: '2026-06-10' },
-          ]);
-        } else {
-          setData([
-            { id: '101', userName: 'Bob Johnson', type: 'KYC Document', details: 'Driver License upload for Tier-2 verification', date: '2026-06-11' },
-            { id: '102', userName: 'Clara Oswald', type: 'KYC Document', details: 'National ID upload for verification', date: '2026-06-09' },
-          ]);
-        }
-        setLoading(false);
-      }, 1000);
-    } catch (err) {
-      setLoading(false);
-      Alert.alert('Error', 'Failed to retrieve administrative queues.');
-    }
+  const [refreshing, setRefreshing] = useState(false);
+
+  const {
+    data: statsData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['admin-dashboard-stats'],
+    queryFn: () => adminApi.getDashboard(),
+  });
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
+
+  const stats = statsData?.data?.stats || {
+    totalUsers: 0,
+    pendingRegistrations: 0,
+    pendingDocuments: 0,
+    pendingPayments: 0,
   };
 
-  useEffect(() => {
-    loadPendingItems();
-  }, [activeTab]);
-
-  const handleApprove = (item: PendingRequest) => {
-    Alert.alert('Approve Request', `Are you sure you want to approve this request for ${item.userName}?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Approve',
-        onPress: () => {
-          Alert.alert('Success', 'Request approved successfully.');
-          setData(data.filter((i: PendingRequest) => i.id !== item.id));
-        },
-      },
-    ]);
-  };
-
-  const handleReject = (item: PendingRequest) => {
-    Alert.alert('Reject Request', `Are you sure you want to reject this request for ${item.userName}?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Reject',
-        style: 'destructive',
-        onPress: () => {
-          Alert.alert('Rejected', 'Request has been rejected.');
-          setData(data.filter((i: PendingRequest) => i.id !== item.id));
-        },
-      },
-    ]);
-  };
+  const recentActivity = statsData?.data?.recentActivity || [];
 
   const handleLogout = () => {
     dispatch(logout());
     router.replace('/(auth)/login');
   };
 
-  const renderItem = ({ item }: { item: PendingRequest }) => (
-    <View className="bg-white p-5 rounded-3xl border border-fintech-border mb-4 shadow-sm">
-      <View className="flex-row justify-between items-center mb-2">
-        <Text className="font-bold text-fintech-text text-sm">{item.userName}</Text>
-        <Text className="text-[10px] text-fintech-textMuted">{item.date}</Text>
-      </View>
-      
-      <Text className="text-xs font-semibold text-fintech-primary uppercase tracking-wider mb-1">{item.type}</Text>
-      
-      {item.amount && (
-        <Text className="text-base font-extrabold text-fintech-text mb-2">₦{item.amount.toLocaleString()}</Text>
-      )}
-      
-      <Text className="text-xs text-fintech-textMuted leading-relaxed mb-4">{item.details}</Text>
+  // ── Overview stat cards ──────────────────────────────────────────────────
+  const STAT_CARDS = [
+    {
+      label: 'Pending\nRegistrations',
+      value: stats.pendingRegistrations,
+      route: '/admin/registrations',
+      icon: 'user-check',
+      color: '#3B82F6',
+    },
+    {
+      label: 'KYC\nDocuments',
+      value: stats.pendingDocuments,
+      route: '/admin/kyc',
+      icon: 'file-text',
+      color: '#10B981',
+    },
+    {
+      label: 'Payment\nQueue',
+      value: stats.pendingPayments,
+      route: '/admin/payments',
+      icon: 'credit-card',
+      color: '#F59E0B',
+    },
+    {
+      label: 'Total\nUsers',
+      value: stats.totalUsers,
+      route: '/admin/users',
+      icon: 'users',
+      color: '#8B5CF6',
+    },
+  ];
 
-      <View className="flex-row space-x-3">
-        <TouchableOpacity
-          onPress={() => handleReject(item)}
-          className="flex-1 bg-red-50 border border-red-200 py-2.5 rounded-xl items-center"
-        >
-          <Text className="text-red-600 font-bold text-xs">Reject</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          onPress={() => handleApprove(item)}
-          className="flex-1 bg-emerald-50 border border-emerald-200 py-2.5 rounded-xl items-center"
-        >
-          <Text className="text-emerald-700 font-bold text-xs">Approve</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  // ── Navigation panel entries (all 8 admin features) ──────────────────────
+  const NAV_ITEMS = [
+    {
+      title: 'Registrations',
+      desc: 'KYC registration pipelines grouped by applicant',
+      route: '/admin/registrations',
+      icon: 'user-check',
+      color: '#3B82F6',
+    },
+    {
+      title: 'KYC Review',
+      desc: 'Individual document approval queues',
+      route: '/admin/kyc',
+      icon: 'file-text',
+      color: '#10B981',
+    },
+    {
+      title: 'Payments',
+      desc: 'Payment request approvals & transactional lifecycle actions',
+      route: '/admin/payments',
+      icon: 'credit-card',
+      color: '#F59E0B',
+    },
+    {
+      title: 'Users',
+      desc: 'Active user list with filters & quick search',
+      route: '/admin/users',
+      icon: 'users',
+      color: '#8B5CF6',
+    },
+    {
+      title: 'Treasury Rates',
+      desc: 'Authoritative platform treasury rate setup panel',
+      route: '/admin/rates',
+      icon: 'trending-up',
+      color: '#0EA5E9',
+    },
+    {
+      title: 'Virtual Accounts',
+      desc: 'Fidelity virtual accounts review & manual completions',
+      route: '/admin/virtual-accounts',
+      icon: 'hash',
+      color: '#6366F1',
+    },
+    {
+      title: 'Simulations',
+      desc: 'Simulate system inputs and test workflows',
+      route: '/admin/simulations',
+      icon: 'cpu',
+      color: '#EC4899',
+    },
+    {
+      title: 'Platform Alerts',
+      desc: 'Compliance flags, rejected payments & KYC issues',
+      route: '/admin/alerts',
+      icon: 'bell',
+      color: '#EF4444',
+    },
+  ];
 
   return (
-    <SafeAreaView className="flex-1 bg-fintech-background" edges={['top', 'left', 'right']}>
-      <View className="p-4 flex-1">
-        {/* Header */}
-        <View className="flex-row justify-between items-center mb-6">
+    <SafeAreaView style={{ flex: 1, backgroundColor: bgMain }} edges={['top', 'left', 'right']}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 48 }}
+        style={{ paddingHorizontal: 16, paddingTop: 4 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1E3A8A']} />
+        }
+      >
+        {/* ── Header ── */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, marginTop: 12 }}>
           <View>
-            <Text className="text-xs text-fintech-textMuted font-semibold uppercase tracking-wider">Control Panel</Text>
-            <Text className="text-xl font-bold text-fintech-text">Admin Dashboard</Text>
+            <Text style={{ fontSize: 10, fontWeight: '800', color: isDark ? '#60A5FA' : '#1E3A8A', letterSpacing: 2.5, textTransform: 'uppercase', marginBottom: 2 }}>
+              Kenluk Pay
+            </Text>
+            <Text style={{ fontSize: 22, fontWeight: '800', color: textTitle, letterSpacing: -0.5 }}>
+              Admin Console
+            </Text>
+            <Text style={{ fontSize: 12, color: textMuted, marginTop: 2 }}>
+              Welcome back, {user?.name || 'Admin'}
+            </Text>
           </View>
-          <TouchableOpacity onPress={handleLogout} className="p-2 bg-red-50 rounded-xl border border-red-200">
-            <Ionicons name="log-out-outline" size={20} color="#DC2626" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {/* Theme Toggle Button */}
+            <TouchableOpacity
+              onPress={() => dispatch(toggleTheme())}
+              activeOpacity={0.7}
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: isDark ? 'rgba(96, 165, 250, 0.1)' : '#EFF6FF',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: isDark ? 'rgba(96, 165, 250, 0.2)' : '#DBEAFE',
+                marginRight: 8
+              }}
+            >
+              <Feather name={isDark ? "sun" : "moon"} size={18} color={isDark ? "#60A5FA" : "#1E3A8A"} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleLogout}
+              activeOpacity={0.7}
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : '#FEF2F2',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FECACA'
+              }}
+            >
+              <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Tab Selector */}
-        <View className="flex-row bg-white border border-fintech-border rounded-2xl p-1 mb-6">
-          <TouchableOpacity
-            onPress={() => setActiveTab('payments')}
-            className={`flex-1 py-3 items-center rounded-xl ${activeTab === 'payments' ? 'bg-fintech-primary' : ''}`}
-          >
-            <Text className={`text-xs font-bold ${activeTab === 'payments' ? 'text-white' : 'text-fintech-textMuted'}`}>
-              Pending Payments
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab('kyc')}
-            className={`flex-1 py-3 items-center rounded-xl ${activeTab === 'kyc' ? 'bg-fintech-primary' : ''}`}
-          >
-            <Text className={`text-xs font-bold ${activeTab === 'kyc' ? 'text-white' : 'text-fintech-textMuted'}`}>
-              KYC Document Reviews
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* List items */}
-        {loading ? (
-          <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color="#1E3A8A" />
-            <Text className="text-xs text-fintech-textMuted mt-2">Loading administrative queue...</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={data}
-            keyExtractor={(item: PendingRequest) => item.id}
-            renderItem={renderItem}
-            ListEmptyComponent={
-              <View className="flex-1 justify-center items-center py-20">
-                <Ionicons name="checkmark-circle-outline" size={48} color="#10B981" />
-                <Text className="text-sm font-bold text-fintech-text mt-3">All caught up!</Text>
-                <Text className="text-xs text-fintech-textMuted mt-1">No items currently requiring review.</Text>
+        {/* ── Overview Stats Grid ── */}
+        <Text style={{ fontSize: 10, fontWeight: '700', color: textMuted, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 12 }}>
+          Overview
+        </Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 28 }}>
+          {STAT_CARDS.map((card, idx) => (
+            <TouchableOpacity
+              key={idx}
+              onPress={() => router.push(card.route as any)}
+              activeOpacity={0.75}
+              style={{
+                width: '48%',
+                backgroundColor: bgCard,
+                borderRadius: 20,
+                padding: 18,
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: borderCard,
+                shadowColor: shadowColor,
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.08,
+                shadowRadius: 4,
+                elevation: 1,
+              }}
+            >
+              {/* Icon */}
+              <View style={{
+                width: 36, height: 36, borderRadius: 12,
+                backgroundColor: card.color + '15',
+                alignItems: 'center', justifyContent: 'center',
+                marginBottom: 14,
+              }}>
+                <Feather name={card.icon as any} size={16} color={card.color} />
               </View>
-            }
-          />
-        )}
-      </View>
+              {/* Count */}
+              {isLoading ? (
+                <ActivityIndicator size="small" color={card.color} style={{ marginBottom: 6, alignSelf: 'flex-start' }} />
+              ) : (
+                <Text style={{ fontSize: 28, fontWeight: '800', color: textTitle, letterSpacing: -1, lineHeight: 32 }}>
+                  {card.value ?? 0}
+                </Text>
+              )}
+              {/* Label */}
+              <Text style={{ fontSize: 10, color: textMuted, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 4, lineHeight: 14 }}>
+                {card.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* ── Quick Navigation Panel ── */}
+        <Text style={{ fontSize: 10, fontWeight: '700', color: textMuted, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 12 }}>
+          Quick Navigation
+        </Text>
+        <View style={{ backgroundColor: bgCard, borderRadius: 24, borderWidth: 1, borderColor: borderCard, overflow: 'hidden', marginBottom: 28 }}>
+          {NAV_ITEMS.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => router.push(item.route as any)}
+              activeOpacity={0.7}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 18,
+                paddingVertical: 15,
+                borderBottomWidth: index < NAV_ITEMS.length - 1 ? 1 : 0,
+                borderBottomColor: borderCard,
+              }}
+            >
+              {/* Icon */}
+              <View style={{
+                width: 40, height: 40, borderRadius: 13,
+                backgroundColor: item.color + '12',
+                alignItems: 'center', justifyContent: 'center',
+                marginRight: 14,
+                flexShrink: 0,
+              }}>
+                <Feather name={item.icon as any} size={17} color={item.color} />
+              </View>
+              {/* Text */}
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: textTitle }}>{item.title}</Text>
+                <Text style={{ fontSize: 10, color: textMuted, marginTop: 2, lineHeight: 14 }}>{item.desc}</Text>
+              </View>
+              {/* Chevron */}
+              <Ionicons name="chevron-forward" size={15} color={isDark ? '#475569' : '#CBD5E1'} />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* ── Recent Activity ── */}
+        <Text style={{ fontSize: 10, fontWeight: '700', color: textMuted, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 12 }}>
+          Latest Activity
+        </Text>
+        <View style={{ backgroundColor: bgCard, borderRadius: 24, borderWidth: 1, borderColor: borderCard, padding: 18, marginBottom: 8 }}>
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#3B82F6" style={{ paddingVertical: 16 }} />
+          ) : recentActivity.length === 0 ? (
+            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+              <Feather name="clock" size={24} color={isDark ? '#475569' : '#CBD5E1'} />
+              <Text style={{ fontSize: 11, color: textMuted, marginTop: 8 }}>No recent activity yet.</Text>
+            </View>
+          ) : (
+            recentActivity.map((activity: any, index: number) => (
+              <View
+                key={index}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  paddingBottom: index < recentActivity.length - 1 ? 14 : 0,
+                  marginBottom: index < recentActivity.length - 1 ? 14 : 0,
+                  borderBottomWidth: index < recentActivity.length - 1 ? 1 : 0,
+                  borderBottomColor: borderCard,
+                }}
+              >
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: isDark ? '#1E356A' : '#CBD5E1', marginTop: 4, marginRight: 12, flexShrink: 0 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: textTitle, lineHeight: 17 }}>
+                    {activity.message}
+                  </Text>
+                  <Text style={{ fontSize: 10, color: textMuted, marginTop: 3 }}>
+                    {new Date(activity.time).toLocaleString()}
+                  </Text>
+                </View>
+              </View>
+            ))
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

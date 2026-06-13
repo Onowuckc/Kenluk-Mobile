@@ -195,6 +195,29 @@ const walletSlice = createSlice({
       .addCase(fetchWalletSummary.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(fetchWalletBalance.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchWalletBalance.fulfilled, (state, action) => {
+        state.loading = false;
+        state.balance = action.payload;
+      })
+      .addCase(fetchWalletBalance.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(validateWalletBalance.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(validateWalletBalance.fulfilled, (state, action) => {
+        state.error = null;
+        state.balanceValidation = action.payload;
+      })
+      .addCase(validateWalletBalance.rejected, (state, action) => {
+        state.error = action.payload as string;
+        state.balanceValidation = null;
       });
   }
 });

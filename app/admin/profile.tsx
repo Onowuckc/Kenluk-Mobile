@@ -22,13 +22,7 @@ import { RootState } from '../../src/redux/store';
 import { userApi } from '../../src/services/userApi';
 import { toggleTheme } from '../../src/redux/slices/themeSlice';
 
-interface DirectorInfo {
-  name: string;
-  ninOrBvn: string;
-  position: string;
-}
-
-export default function ProfileScreen() {
+export default function AdminProfileScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
@@ -37,7 +31,7 @@ export default function ProfileScreen() {
   const themeMode = useSelector((state: RootState) => state.theme.mode);
   const isDark = themeMode === 'dark';
 
-  // Theme styling configurations
+  // Dynamic Theme Helpers
   const bgMain = isDark ? 'bg-[#080F26]' : 'bg-slate-50';
   const bgCard = isDark ? 'bg-[#0F1E43]' : 'bg-white';
   const borderCard = isDark ? 'border-[#1E356A]' : 'border-slate-100';
@@ -56,13 +50,6 @@ export default function ProfileScreen() {
   // Form states - Profile
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  // Read-only on backend, displayed for UI completeness
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [bvn, setBvn] = useState('');
-  const [tin, setTin] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [directors, setDirectors] = useState<DirectorInfo[]>([]);
 
   // Form states - Password
   const [currentPassword, setCurrentPassword] = useState('');
@@ -80,9 +67,9 @@ export default function ProfileScreen() {
   } | null>(null);
   const [isDisabling2fa, setIsDisabling2fa] = useState(false);
 
-  // 1. Fetch backend profile settings with React Query
+  // Fetch backend profile settings with React Query
   const { data: profileResponse, isLoading: isProfileLoading } = useQuery({
-    queryKey: ['user-profile'],
+    queryKey: ['admin-profile'],
     queryFn: () => userApi.getProfile(),
   });
 
@@ -92,24 +79,16 @@ export default function ProfileScreen() {
       const user = profileResponse.data.user;
       setName(user.name || '');
       setEmail(user.email || '');
-      // Mocked read-only fields populated from local/auth slice if defined
-      setPhone(reduxUser?.phoneNumber || '');
-      setAddress('');
-      setBvn('');
-      setTin('');
-      setCompanyName('');
-      setDirectors([]);
     }
-  }, [profileResponse, reduxUser]);
+  }, [profileResponse]);
 
   const is2faEnabled = !!profileResponse?.data?.user?.twoFactorEnabled;
 
-  // 2. Mutations
-  // Update Profile Mutation
+  // Mutations
   const updateProfileMutation = useMutation({
     mutationFn: (data: { name: string; email: string }) => userApi.updateProfile(data),
     onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-profile'] });
       Alert.alert('Success', response.message || 'Profile updated successfully!');
     },
     onError: (error: any) => {
@@ -117,7 +96,6 @@ export default function ProfileScreen() {
     },
   });
 
-  // Change Password Mutation
   const changePasswordMutation = useMutation({
     mutationFn: (data: { currentPassword: string; newPassword: string }) => userApi.changePassword(data),
     onSuccess: (response) => {
@@ -131,7 +109,6 @@ export default function ProfileScreen() {
     },
   });
 
-  // Start 2FA Setup Mutation
   const start2faMutation = useMutation({
     mutationFn: () => userApi.startTwoFactorSetup(),
     onSuccess: (response) => {
@@ -146,11 +123,10 @@ export default function ProfileScreen() {
     },
   });
 
-  // Confirm 2FA Setup Mutation
   const confirm2faMutation = useMutation({
     mutationFn: (data: { twoFactorCode: string }) => userApi.confirmTwoFactorSetup(data),
     onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-profile'] });
       setTwoFactorSetup(null);
       setTwoFactorCode('');
       setTwoFactorMessage('');
@@ -161,11 +137,10 @@ export default function ProfileScreen() {
     },
   });
 
-  // Disable 2FA Mutation
   const disable2faMutation = useMutation({
     mutationFn: (data: { twoFactorCode: string }) => userApi.disableTwoFactor(data),
     onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-profile'] });
       setIsDisabling2fa(false);
       setTwoFactorCode('');
       setTwoFactorMessage('');
@@ -176,7 +151,6 @@ export default function ProfileScreen() {
     },
   });
 
-  // Handlers
   const handleSaveProfile = () => {
     if (!name.trim()) {
       Alert.alert('Validation Error', 'Full Name is required.');
@@ -272,8 +246,8 @@ export default function ProfileScreen() {
           <View className="flex-row items-center justify-between mb-6">
             <View>
               <Text className="text-[11px] font-extrabold uppercase mb-0.5" style={{ color: isDark ? '#60A5FA' : '#1E3A8A', letterSpacing: 2 }}>Kenluk Pay</Text>
-              <Text className={`text-xl font-bold ${textTitle}`}>Profile & Settings</Text>
-              <Text className={`text-xs ${textMuted} mt-0.5`}>Manage details, security settings and 2FA</Text>
+              <Text className={`text-xl font-bold ${textTitle}`}>Admin Profile</Text>
+              <Text className={`text-xs ${textMuted} mt-0.5`}>Manage administrator account details and security</Text>
             </View>
             <View className="flex-row items-center space-x-2">
               <TouchableOpacity
@@ -327,14 +301,14 @@ export default function ProfileScreen() {
                 <View className="space-y-6">
                   {/* Personal info Form */}
                   <View className={`${bgCard} rounded-3xl p-5 border ${borderCard} shadow-sm space-y-4`}>
-                    <Text className={`text-sm font-bold ${textTitle}`}>Personal Information</Text>
+                    <Text className={`text-sm font-bold ${textTitle}`}>Admin Information</Text>
 
                     <View>
                       <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>Full Name</Text>
                       <TextInput
                         value={name}
                         onChangeText={setName}
-                        placeholder="Your full name"
+                        placeholder="Administrator Name"
                         placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                         className={`${inputBg} border ${inputBorder} px-4 py-3 rounded-xl ${textInputColor} text-sm font-medium`}
                       />
@@ -345,7 +319,7 @@ export default function ProfileScreen() {
                       <TextInput
                         value={email}
                         onChangeText={setEmail}
-                        placeholder="you@company.com"
+                        placeholder="admin@company.com"
                         placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                         keyboardType="email-address"
                         autoCapitalize="none"
@@ -366,63 +340,6 @@ export default function ProfileScreen() {
                       )}
                     </TouchableOpacity>
                   </View>
-
-                  {/* Read-Only Details Alert Widget */}
-                  <View className={`${bgCard} rounded-3xl p-5 border ${borderCard} shadow-sm space-y-4`}>
-                    <View className="flex-row items-center justify-between">
-                      <Text className={`text-sm font-bold ${textTitle}`}>Business Details</Text>
-                      <View className={`${isDark ? 'bg-blue-950/30 border-blue-900/40' : 'bg-blue-50 border-blue-100'} px-2 py-0.5 rounded-full border`}>
-                        <Text className="text-[9px] font-bold text-blue-500 uppercase">Read-Only</Text>
-                      </View>
-                    </View>
-
-                    {/* Information Note */}
-                    <View className={`${isDark ? 'bg-blue-950/20 border-blue-900/40' : 'bg-blue-50/50 border-blue-100'} p-3.5 rounded-xl border flex-row items-start space-x-2`}>
-                      <Feather name="info" size={16} color={isDark ? '#60A5FA' : '#2563EB'} style={{ marginRight: 6, marginTop: 2 }} />
-                      <Text className={`${isDark ? 'text-blue-300' : 'text-blue-800'} text-[10px] leading-relaxed flex-1`}>
-                        To update phone number, address, BVN, TIN, company name, or director positions, please complete revised KYC submissions or contact administrative support.
-                      </Text>
-                    </View>
-
-                    <View className={`space-y-3 divide-y ${isDark ? 'divide-blue-950/50' : 'divide-slate-100'}`}>
-                      <View className="flex-row justify-between items-center py-2">
-                        <Text className={`text-xs ${textMuted}`}>Phone Number</Text>
-                        <Text className={`text-xs font-semibold ${textTitle}`}>{phone || '—'}</Text>
-                      </View>
-                      <View className="flex-row justify-between items-center pt-2">
-                        <Text className={`text-xs ${textMuted}`}>Address</Text>
-                        <Text className={`text-xs font-semibold ${textTitle}`}>{address || '—'}</Text>
-                      </View>
-                      <View className="flex-row justify-between items-center pt-2">
-                        <Text className={`text-xs ${textMuted}`}>Company Name</Text>
-                        <Text className={`text-xs font-semibold ${textTitle}`}>{companyName || '—'}</Text>
-                      </View>
-                      <View className="flex-row justify-between items-center pt-2">
-                        <Text className={`text-xs ${textMuted}`}>BVN Status</Text>
-                        <Text className={`text-xs font-semibold ${textTitle}`}>{bvn ? 'Verified' : '—'}</Text>
-                      </View>
-                      <View className="flex-row justify-between items-center pt-2">
-                        <Text className={`text-xs ${textMuted}`}>TIN Status</Text>
-                        <Text className={`text-xs font-semibold ${textTitle}`}>{tin ? 'Verified' : '—'}</Text>
-                      </View>
-                    </View>
-
-                    {/* Directors Section */}
-                    {directors.length > 0 && (
-                      <View className="mt-4 pt-2">
-                        <Text className={`text-xs font-bold ${textTitle} mb-2`}>Registered Directors</Text>
-                        {directors.map((d, index) => (
-                          <View key={index} className={`${inputBg} border ${inputBorder} p-3 rounded-xl mb-2 flex-row justify-between items-center`}>
-                            <View>
-                              <Text className={`text-xs font-semibold ${textTitle}`}>{d.name}</Text>
-                              <Text className={`text-[10px] ${textMuted}`}>{d.position}</Text>
-                            </View>
-                            <Text className={`text-[10px] font-semibold ${textMuted}`}>ID: {d.ninOrBvn}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    )}
-                  </View>
                 </View>
               )}
 
@@ -435,9 +352,9 @@ export default function ProfileScreen() {
                     <View className="flex-row items-center justify-between">
                       <View className="flex-1 pr-2">
                         <Text className={`text-sm font-bold ${textTitle}`}>Two-Factor Authentication</Text>
-                        <Text className={`text-[10px] ${textMuted} mt-0.5`}>Protect your account with an extra security step.</Text>
+                        <Text className={`text-[10px] ${textMuted} mt-0.5`}>Protect your admin account with an extra verification code step.</Text>
                       </View>
-                      <View className={`px-2 py-0.5 rounded-full border ${is2faEnabled ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'}`}>
+                      <View className={`px-2 py-0.5 rounded-full ${is2faEnabled ? 'bg-emerald-50 border border-emerald-100' : 'bg-red-50 border border-red-100'}`}>
                         <Text className={`text-[9px] font-bold uppercase ${is2faEnabled ? 'text-emerald-700' : 'text-red-700'}`}>
                           {is2faEnabled ? 'Enabled' : 'Disabled'}
                         </Text>

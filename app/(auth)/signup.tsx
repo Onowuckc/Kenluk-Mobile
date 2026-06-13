@@ -16,12 +16,29 @@ import { authApi } from '../../src/services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../src/redux/store';
 
 const logoImg = require('../../assets/kenluk1.png');
 const backgroundImg = require('../../assets/images/Procurement 3.jpg');
 
 export default function SignupScreen() {
   const router = useRouter();
+
+  const themeMode = useSelector((state: RootState) => state.theme.mode);
+  const isDark = themeMode === 'dark';
+
+  // Dynamic Theme Helpers
+  const bgMain = isDark ? 'bg-[#080F26]' : 'bg-slate-900';
+  const bgCard = isDark ? 'bg-[#0F1E43]/90' : 'bg-white';
+  const borderCard = isDark ? 'border-[#1E356A]/60' : 'border-slate-100';
+  const textTitle = isDark ? 'text-white' : 'text-slate-900';
+  const textMuted = isDark ? 'text-slate-400' : 'text-slate-700';
+  const inputBg = isDark ? 'bg-[#121E42]' : 'bg-white';
+  const inputBorder = isDark ? 'border-[#1F3978]' : 'border-slate-200';
+  const textInputColor = isDark ? 'text-white' : 'text-slate-900';
+  const textLink = isDark ? 'text-blue-400' : 'text-blue-600';
+  const borderDivider = isDark ? 'border-blue-950/40' : 'border-slate-100';
 
   const [form, setForm] = useState({
     firstName: '',
@@ -99,22 +116,22 @@ export default function SignupScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-950" edges={[]}>
+    <SafeAreaView className={`flex-1 ${bgMain}`} edges={[]}>
       <ImageBackground
         source={backgroundImg}
         resizeMode="cover"
         className="flex-1"
-        imageStyle={{ opacity: 0.3 }}
+        imageStyle={{ opacity: isDark ? 0.15 : 0.3 }}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
         >
-          <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="p-6 justify-center">
-            <View className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 max-w-sm w-full self-center my-8">
+          <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} className="p-6">
+            <View className={`rounded-3xl shadow-2xl overflow-hidden border max-w-sm w-full self-center my-8 ${bgCard} ${borderCard}`}>
               {/* Header banner */}
               <LinearGradient
-                colors={['#1E3A8A', '#1D4ED8']}
+                colors={isDark ? ['#1E3A8A', '#0F1E43'] : ['#1E3A8A', '#1D4ED8']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 className="px-6 py-8 items-center relative"
@@ -140,34 +157,34 @@ export default function SignupScreen() {
                   {/* First Name & Last Name row */}
                   <View className="flex-row space-x-3">
                     <View className="flex-1">
-                      <Text className="text-xs font-semibold text-slate-700 mb-1.5">First Name</Text>
-                      <View className={`flex-row items-center bg-white border ${errors.firstName ? 'border-red-400' : focusedField === 'firstName' ? 'border-blue-500' : 'border-slate-200'} rounded-xl px-2.5 py-0.5`}>
-                        <Feather name="user" size={14} color={focusedField === 'firstName' ? '#2563EB' : '#94A3B8'} className="mr-1.5" />
+                      <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>First Name</Text>
+                      <View className={`flex-row items-center ${inputBg} border ${errors.firstName ? 'border-red-400' : focusedField === 'firstName' ? 'border-blue-500' : inputBorder} rounded-xl px-2.5 py-0.5`}>
+                        <Feather name="user" size={14} color={focusedField === 'firstName' ? '#3B82F6' : (isDark ? '#475569' : '#94A3B8')} style={{ marginRight: 6 }} />
                         <TextInput
                           value={form.firstName}
                           onChangeText={(v) => updateForm('firstName', v)}
                           onFocus={() => setFocusedField('firstName')}
                           onBlur={() => setFocusedField(null)}
                           placeholder="John"
-                          placeholderTextColor="#94A3B8"
-                          className="flex-1 text-slate-900 text-sm py-2"
+                          placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
+                          className={`flex-1 ${textInputColor} text-sm py-2`}
                         />
                       </View>
                       {errors.firstName && <Text className="text-red-500 text-[9px] mt-0.5">{errors.firstName}</Text>}
                     </View>
 
                     <View className="flex-1">
-                      <Text className="text-xs font-semibold text-slate-700 mb-1.5">Last Name</Text>
-                      <View className={`flex-row items-center bg-white border ${errors.lastName ? 'border-red-400' : focusedField === 'lastName' ? 'border-blue-500' : 'border-slate-200'} rounded-xl px-2.5 py-0.5`}>
-                        <Feather name="user" size={14} color={focusedField === 'lastName' ? '#2563EB' : '#94A3B8'} className="mr-1.5" />
+                      <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>Last Name</Text>
+                      <View className={`flex-row items-center ${inputBg} border ${errors.lastName ? 'border-red-400' : focusedField === 'lastName' ? 'border-blue-500' : inputBorder} rounded-xl px-2.5 py-0.5`}>
+                        <Feather name="user" size={14} color={focusedField === 'lastName' ? '#3B82F6' : (isDark ? '#475569' : '#94A3B8')} style={{ marginRight: 6 }} />
                         <TextInput
                           value={form.lastName}
                           onChangeText={(v) => updateForm('lastName', v)}
                           onFocus={() => setFocusedField('lastName')}
                           onBlur={() => setFocusedField(null)}
                           placeholder="Doe"
-                          placeholderTextColor="#94A3B8"
-                          className="flex-1 text-slate-900 text-sm py-2"
+                          placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
+                          className={`flex-1 ${textInputColor} text-sm py-2`}
                         />
                       </View>
                       {errors.lastName && <Text className="text-red-500 text-[9px] mt-0.5">{errors.lastName}</Text>}
@@ -176,19 +193,19 @@ export default function SignupScreen() {
 
                   {/* Email Input */}
                   <View>
-                    <Text className="text-xs font-semibold text-slate-700 mb-1.5">Email Address</Text>
-                    <View className={`flex-row items-center bg-white border ${errors.email ? 'border-red-400' : focusedField === 'email' ? 'border-blue-500' : 'border-slate-200'} rounded-xl px-3 py-0.5`}>
-                      <Feather name="mail" size={16} color={focusedField === 'email' ? '#2563EB' : '#94A3B8'} className="mr-2" />
+                    <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>Email Address</Text>
+                    <View className={`flex-row items-center ${inputBg} border ${errors.email ? 'border-red-400' : focusedField === 'email' ? 'border-blue-500' : inputBorder} rounded-xl px-3 py-0.5`}>
+                      <Feather name="mail" size={16} color={focusedField === 'email' ? '#3B82F6' : (isDark ? '#475569' : '#94A3B8')} style={{ marginRight: 8 }} />
                       <TextInput
                         value={form.email}
                         onChangeText={(v) => updateForm('email', v)}
                         onFocus={() => setFocusedField('email')}
                         onBlur={() => setFocusedField(null)}
                         placeholder="you@company.com"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                         autoCapitalize="none"
                         keyboardType="email-address"
-                        className="flex-1 text-slate-900 text-sm py-2.5"
+                        className={`flex-1 ${textInputColor} text-sm py-2.5`}
                       />
                     </View>
                     {errors.email && <Text className="text-red-500 text-[10px] mt-1">{errors.email}</Text>}
@@ -196,18 +213,18 @@ export default function SignupScreen() {
 
                   {/* Phone Input */}
                   <View>
-                    <Text className="text-xs font-semibold text-slate-700 mb-1.5">Phone Number</Text>
-                    <View className={`flex-row items-center bg-white border ${errors.phoneNumber ? 'border-red-400' : focusedField === 'phoneNumber' ? 'border-blue-500' : 'border-slate-200'} rounded-xl px-3 py-0.5`}>
-                      <Feather name="phone" size={16} color={focusedField === 'phoneNumber' ? '#2563EB' : '#94A3B8'} className="mr-2" />
+                    <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>Phone Number</Text>
+                    <View className={`flex-row items-center ${inputBg} border ${errors.phoneNumber ? 'border-red-400' : focusedField === 'phoneNumber' ? 'border-blue-500' : inputBorder} rounded-xl px-3 py-0.5`}>
+                      <Feather name="phone" size={16} color={focusedField === 'phoneNumber' ? '#3B82F6' : (isDark ? '#475569' : '#94A3B8')} style={{ marginRight: 8 }} />
                       <TextInput
                         value={form.phoneNumber}
                         onChangeText={(v) => updateForm('phoneNumber', v)}
                         onFocus={() => setFocusedField('phoneNumber')}
                         onBlur={() => setFocusedField(null)}
                         placeholder="+234..."
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                         keyboardType="phone-pad"
-                        className="flex-1 text-slate-900 text-sm py-2.5"
+                        className={`flex-1 ${textInputColor} text-sm py-2.5`}
                       />
                     </View>
                     {errors.phoneNumber && <Text className="text-red-500 text-[10px] mt-1">{errors.phoneNumber}</Text>}
@@ -215,22 +232,22 @@ export default function SignupScreen() {
 
                   {/* Password Input */}
                   <View>
-                    <Text className="text-xs font-semibold text-slate-700 mb-1.5">Password</Text>
-                    <View className={`flex-row items-center bg-white border ${errors.password ? 'border-red-400' : focusedField === 'password' ? 'border-blue-500' : 'border-slate-200'} rounded-xl px-3 py-0.5`}>
-                      <Feather name="lock" size={16} color={focusedField === 'password' ? '#2563EB' : '#94A3B8'} className="mr-2" />
+                    <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>Password</Text>
+                    <View className={`flex-row items-center ${inputBg} border ${errors.password ? 'border-red-400' : focusedField === 'password' ? 'border-blue-500' : inputBorder} rounded-xl px-3 py-0.5`}>
+                      <Feather name="lock" size={16} color={focusedField === 'password' ? '#3B82F6' : (isDark ? '#475569' : '#94A3B8')} style={{ marginRight: 8 }} />
                       <TextInput
                         value={form.password}
                         onChangeText={(v) => updateForm('password', v)}
                         onFocus={() => setFocusedField('password')}
                         onBlur={() => setFocusedField(null)}
                         placeholder="Min. 6 characters"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                         secureTextEntry={!showPassword}
                         autoCapitalize="none"
-                        className="flex-1 text-slate-900 text-sm py-2.5"
+                        className={`flex-1 ${textInputColor} text-sm py-2.5`}
                       />
                       <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="p-1">
-                        <Feather name={showPassword ? "eye-off" : "eye"} size={16} color="#64748B" />
+                        <Feather name={showPassword ? "eye-off" : "eye"} size={16} color={isDark ? '#60A5FA' : '#64748B'} />
                       </TouchableOpacity>
                     </View>
                     {errors.password && <Text className="text-red-500 text-[10px] mt-1">{errors.password}</Text>}
@@ -238,22 +255,22 @@ export default function SignupScreen() {
 
                   {/* Confirm Password Input */}
                   <View>
-                    <Text className="text-xs font-semibold text-slate-700 mb-1.5">Confirm Password</Text>
-                    <View className={`flex-row items-center bg-white border ${errors.confirmPassword ? 'border-red-400' : focusedField === 'confirmPassword' ? 'border-blue-500' : 'border-slate-200'} rounded-xl px-3 py-0.5`}>
-                      <Feather name="lock" size={16} color={focusedField === 'confirmPassword' ? '#2563EB' : '#94A3B8'} className="mr-2" />
+                    <Text className={`text-xs font-semibold ${textMuted} mb-1.5`}>Confirm Password</Text>
+                    <View className={`flex-row items-center ${inputBg} border ${errors.confirmPassword ? 'border-red-400' : focusedField === 'confirmPassword' ? 'border-blue-500' : inputBorder} rounded-xl px-3 py-0.5`}>
+                      <Feather name="lock" size={16} color={focusedField === 'confirmPassword' ? '#3B82F6' : (isDark ? '#475569' : '#94A3B8')} style={{ marginRight: 8 }} />
                       <TextInput
                         value={form.confirmPassword}
                         onChangeText={(v) => updateForm('confirmPassword', v)}
                         onFocus={() => setFocusedField('confirmPassword')}
                         onBlur={() => setFocusedField(null)}
                         placeholder="Re-enter password"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                         secureTextEntry={!showConfirmPassword}
                         autoCapitalize="none"
-                        className="flex-1 text-slate-900 text-sm py-2.5"
+                        className={`flex-1 ${textInputColor} text-sm py-2.5`}
                       />
                       <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} className="p-1">
-                        <Feather name={showConfirmPassword ? "eye-off" : "eye"} size={16} color="#64748B" />
+                        <Feather name={showConfirmPassword ? "eye-off" : "eye"} size={16} color={isDark ? '#60A5FA' : '#64748B'} />
                       </TouchableOpacity>
                     </View>
                     {errors.confirmPassword && <Text className="text-red-500 text-[10px] mt-1">{errors.confirmPassword}</Text>}
@@ -269,16 +286,16 @@ export default function SignupScreen() {
                   {isLoading ? (
                     <ActivityIndicator size="small" color="#ffffff" className="mr-2" />
                   ) : (
-                    <Feather name="user-plus" size={16} color="#ffffff" className="mr-2" />
+                    <Feather name="user-plus" size={16} color="#ffffff" style={{ marginRight: 8 }} />
                   )}
                   <Text className="text-white font-bold text-sm">Create Account</Text>
                 </TouchableOpacity>
 
                 {/* Switch to login */}
-                <View className="flex-row justify-center mt-6 border-t border-slate-100 pt-4">
-                  <Text className="text-xs text-slate-500">Already have an account? </Text>
+                <View className={`flex-row justify-center mt-6 border-t ${borderDivider} pt-4`}>
+                  <Text className={`text-xs ${textMuted}`}>Already have an account? </Text>
                   <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
-                    <Text className="text-xs text-blue-600 font-bold">Sign In</Text>
+                    <Text className={`text-xs ${textLink} font-bold`}>Sign In</Text>
                   </TouchableOpacity>
                 </View>
               </View>

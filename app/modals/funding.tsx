@@ -39,8 +39,8 @@ export default function FundingModal() {
     dispatch(createVirtualAccount({
       amount: val,
       customerEmail: user?.email || '',
-      customerFirstName: user?.firstName || '',
-      customerLastName: user?.lastName || '',
+      customerFirstName: user?.name ? user.name.split(' ')[0] : '',
+      customerLastName: user?.name ? user.name.split(' ').slice(1).join(' ') : '',
       customerMobile: user?.phoneNumber || '',
       description
     }) as any);

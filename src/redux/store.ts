@@ -4,17 +4,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import authReducer from './slices/authSlice';
 import walletReducer from './slices/walletSlice';
 import fidelityPaymentReducer from './slices/fidelityPaymentSlice';
+import themeReducer from './slices/themeSlice';
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['auth'], // Only persist the auth slice (tokens, logged-in user state)
+  whitelist: ['auth', 'theme'], // Persist auth state and theme preference
 };
 
 const rootReducer = combineReducers({
   auth: authReducer,
   wallet: walletReducer,
   fidelityPayment: fidelityPaymentReducer,
+  theme: themeReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
