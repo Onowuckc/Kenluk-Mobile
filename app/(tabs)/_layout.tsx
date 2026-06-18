@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -9,6 +9,16 @@ export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const themeMode = useSelector((state: RootState) => state.theme.mode);
   const isDark = themeMode === 'dark';
+  const { token, user } = useSelector((state: RootState) => state.auth);
+
+  if (!token) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
+  if (user?.role === 'admin') {
+    return <Redirect href="/admin/dashboard" />;
+  }
+
 
   return (
     <Tabs

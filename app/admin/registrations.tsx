@@ -15,7 +15,9 @@ import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
 
+import { RootState } from '../../src/redux/store';
 import { adminApi } from '../../src/services/api';
 import { getDocumentTypeLabel } from '../../src/utils/documentTypeMap';
 
@@ -46,6 +48,18 @@ export default function PendingRegistrationsScreen() {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
 
+  const themeMode = useSelector((state: RootState) => state.theme.mode);
+  const isDark = themeMode === 'dark';
+
+  const bgMain = isDark ? 'bg-[#080F26]' : 'bg-slate-50';
+  const bgCard = isDark ? 'bg-[#0F1E43]' : 'bg-white';
+  const borderCard = isDark ? 'border-[#1E356A]' : 'border-slate-100';
+  const textTitle = isDark ? 'text-white' : 'text-slate-800';
+  const textMuted = isDark ? 'text-slate-400' : 'text-slate-500';
+  const inputBg = isDark ? 'bg-[#121E42]' : 'bg-slate-50';
+  const inputBorder = isDark ? 'border-[#1F3978]' : 'border-slate-200';
+  const textInputColor = isDark ? 'text-white' : 'text-slate-900';
+
   // Review modal state
   const [selectedReviewItem, setSelectedReviewItem] = useState<{
     document: KycDocument;
@@ -53,7 +67,6 @@ export default function PendingRegistrationsScreen() {
     userName: string;
   } | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   // 1. Fetch grouped pending submissions
   const {
@@ -89,7 +102,7 @@ export default function PendingRegistrationsScreen() {
     },
   });
 
-  const rejectMutation = useMutation({
+  const rejectMutation = useMutation<any, any, { documentId: string; reason: string }>({
     mutationFn: (data: { documentId: string; reason: string }) =>
       adminApi.rejectDocument(data.documentId, data.reason),
     onSuccess: () => {
@@ -150,11 +163,14 @@ export default function PendingRegistrationsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top', 'left', 'right']}>
+    <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top', 'left', 'right']}>
       {/* Top Header */}
-      <View className="px-4 py-3.5 border-b border-slate-100 bg-white">
-        <Text className="text-base font-bold text-slate-800">Pending Registrations</Text>
-        <Text className="text-[10px] text-slate-400 mt-0.5">Review users onboarding document lists</Text>
+      <View
+        className="px-4 py-3.5 border-b"
+        style={{ borderBottomColor: isDark ? '#1E356A' : '#F1F5F9', backgroundColor: isDark ? '#0F1E43' : '#ffffff' }}
+      >
+        <Text className={`text-base font-bold ${textTitle}`}>Pending Registrations</Text>
+        <Text className={`text-[10px] ${textMuted} mt-0.5`}>Review users onboarding document lists</Text>
       </View>
 
       <ScrollView
@@ -166,53 +182,53 @@ export default function PendingRegistrationsScreen() {
       >
         {isLoading && !refreshing ? (
           <View className="flex-1 justify-center py-20">
-            <ActivityIndicator size="large" color="#1E3A8A" />
+            <ActivityIndicator size="large" color={isDark ? '#60A5FA' : '#1E3A8A'} />
           </View>
         ) : submissions.length === 0 ? (
-          <View className="flex-1 justify-center items-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm mt-4">
+          <View className={`flex-1 justify-center items-center py-20 rounded-3xl border shadow-sm mt-4 ${bgCard} ${borderCard}`}>
             <Ionicons name="checkmark-circle-outline" size={48} color="#10B981" />
-            <Text className="text-sm font-bold text-slate-800 mt-3">All Caught Up!</Text>
-            <Text className="text-xs text-slate-400 mt-1">No registration queues pending approval.</Text>
+            <Text className={`text-sm font-bold mt-3 ${textTitle}`}>All Caught Up!</Text>
+            <Text className={`text-xs mt-1 ${textMuted}`}>No registration queues pending approval.</Text>
           </View>
         ) : (
-          <View className="space-y-4">
+          <View style={{ gap: 16 }}>
             {submissions.map((submission) => (
-              <View key={submission.user._id} className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
+              <View key={submission.user._id} className={`border rounded-3xl p-5 shadow-sm ${bgCard} ${borderCard}`}>
                 {/* User Box */}
-                <View className="border-b border-slate-100 pb-4 mb-4">
-                  <Text className="text-base font-bold text-slate-800">{submission.user.name}</Text>
-                  <Text className="text-xs text-slate-400 mt-0.5">{submission.user.email}</Text>
+                <View className="border-b pb-4 mb-4" style={{ borderBottomColor: isDark ? '#1E356A' : '#F1F5F9' }}>
+                  <Text className={`text-base font-bold ${textTitle}`}>{submission.user.name}</Text>
+                  <Text className={`text-xs mt-0.5 ${textMuted}`}>{submission.user.email}</Text>
                   <View className="flex-row items-center justify-between mt-2.5">
-                    <View className="bg-slate-100 px-2 py-0.5 rounded-full">
-                      <Text className="text-[9px] font-bold text-slate-600">{submission.user.companyName || 'No Company'}</Text>
+                    <View className={`px-2 py-0.5 rounded-full ${isDark ? 'bg-blue-950/40 border border-blue-900/30' : 'bg-slate-100'}`}>
+                      <Text className={`text-[9px] font-bold ${isDark ? 'text-blue-300' : 'text-slate-600'}`}>{submission.user.companyName || 'No Company'}</Text>
                     </View>
-                    <Text className="text-[9px] text-slate-400">
+                    <Text className={`text-[9px] ${textMuted}`}>
                       Submitted: {new Date(submission.submittedAt).toLocaleDateString()}
                     </Text>
                   </View>
                 </View>
 
                 {/* Documents List */}
-                <View className="space-y-3">
-                  <Text className="text-xs font-bold text-slate-500 mb-1">Uploaded Documents ({submission.documents.length})</Text>
+                <View style={{ gap: 12 }}>
+                  <Text className={`text-xs font-bold mb-1 ${textTitle}`}>Uploaded Documents ({submission.documents.length})</Text>
                   {submission.documents.map((doc) => (
-                    <View key={doc._id} className="bg-slate-50/50 border border-slate-100 rounded-2xl p-4">
+                    <View key={doc._id} className={`border rounded-2xl p-4 ${isDark ? 'bg-[#121E42] border-[#1F3978]' : 'bg-slate-50/50 border-slate-100'}`}>
                       <View className="flex-row justify-between items-center mb-1">
-                        <Text className="text-xs font-bold text-slate-800">{getDocumentTypeLabel(doc.documentType)}</Text>
-                        <Text className="text-[9px] text-slate-400">{new Date(doc.uploadedAt).toLocaleDateString()}</Text>
+                        <Text className={`text-xs font-bold ${textTitle}`}>{getDocumentTypeLabel(doc.documentType)}</Text>
+                        <Text className={`text-[9px] ${textMuted}`}>{new Date(doc.uploadedAt).toLocaleDateString()}</Text>
                       </View>
-                      <Text numberOfLines={1} className="text-[9px] text-slate-400 mb-3">
+                      <Text numberOfLines={1} className={`text-[9px] mb-3 ${textMuted}`}>
                         File: {doc.originalFileName} ({formatFileSize(doc.fileSize)})
                       </Text>
 
-                      <View className="flex-row space-x-2">
+                      <View className="flex-row" style={{ gap: 8 }}>
                         <TouchableOpacity
                           onPress={() => handleOpenLink(doc.fileUrl)}
                           style={{ minHeight: 32 }}
-                          className="flex-1 bg-white border border-slate-200 rounded-xl items-center justify-center flex-row"
+                          className={`flex-1 border rounded-xl items-center justify-center flex-row ${bgCard} ${borderCard}`}
                         >
-                          <Feather name="eye" size={12} color="#64748B" style={{ marginRight: 4 }} />
-                          <Text className="text-slate-600 font-bold text-[10px]">View File</Text>
+                          <Feather name="eye" size={12} color={isDark ? '#60A5FA' : '#64748B'} style={{ marginRight: 4 }} />
+                          <Text className={`font-bold text-[10px] ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>View File</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -247,56 +263,59 @@ export default function PendingRegistrationsScreen() {
         onRequestClose={() => setSelectedReviewItem(null)}
       >
         <View className="flex-1 bg-black/50 justify-end">
-          <View className="bg-white rounded-t-3xl p-6 space-y-4">
-            <View className="flex-row justify-between items-center border-b border-slate-100 pb-3 mb-1">
+          <View className={`rounded-t-3xl p-6 ${bgCard} ${borderCard}`} style={{ gap: 16 }}>
+            <View
+              className="flex-row justify-between items-center border-b pb-3 mb-1"
+              style={{ borderBottomColor: isDark ? '#1E356A' : '#F1F5F9' }}
+            >
               <View>
-                <Text className="text-base font-bold text-slate-800">Review Registration File</Text>
-                <Text className="text-[10px] text-slate-400 mt-0.5">
+                <Text className={`text-base font-bold ${textTitle}`}>Review Registration File</Text>
+                <Text className={`text-[10px] ${textMuted} mt-0.5`}>
                   Approve or reject document for {selectedReviewItem?.userName}
                 </Text>
               </View>
               <TouchableOpacity onPress={() => setSelectedReviewItem(null)} className="p-1">
-                <Ionicons name="close" size={24} color="#64748B" />
+                <Ionicons name="close" size={24} color={isDark ? '#60A5FA' : '#64748B'} />
               </TouchableOpacity>
             </View>
 
-            <View className="bg-slate-50 border border-slate-150 rounded-2xl p-4 space-y-1.5">
+            <View className={`border rounded-2xl p-4 ${isDark ? 'bg-[#121E42] border-[#1F3978]' : 'bg-slate-50 border-slate-150'}`} style={{ gap: 6 }}>
               <View className="flex-row justify-between">
-                <Text className="text-[10px] text-slate-400">Document type:</Text>
-                <Text className="text-[10px] font-bold text-slate-800">
+                <Text className={`text-[10px] ${textMuted}`}>Document type:</Text>
+                <Text className={`text-[10px] font-bold ${textTitle}`}>
                   {selectedReviewItem ? getDocumentTypeLabel(selectedReviewItem.document.documentType) : ''}
                 </Text>
               </View>
               <View className="flex-row justify-between">
-                <Text className="text-[10px] text-slate-400">Filename:</Text>
-                <Text numberOfLines={1} className="text-[10px] font-bold text-slate-850 max-w-[200px]">
+                <Text className={`text-[10px] ${textMuted}`}>Filename:</Text>
+                <Text numberOfLines={1} className={`text-[10px] font-bold max-w-[200px] ${textTitle}`}>
                   {selectedReviewItem?.document.originalFileName}
                 </Text>
               </View>
             </View>
 
-            <View className="space-y-2">
-              <Text className="text-xs font-semibold text-slate-700">Rejection Notes (Only required for rejection)</Text>
+            <View style={{ gap: 8 }}>
+              <Text className={`text-xs font-semibold ${textTitle}`}>Rejection Notes (Only required for rejection)</Text>
               <TextInput
                 value={rejectionReason}
                 onChangeText={setRejectionReason}
                 placeholder="Specify compliance issue or missing verification details..."
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                 multiline={true}
                 numberOfLines={3}
-                className="bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-slate-900 text-xs font-medium h-20"
+                className={`border px-4 py-3 rounded-2xl text-xs font-medium h-20 ${inputBg} ${inputBorder} ${textInputColor}`}
               />
             </View>
 
-            <View className="flex-row space-x-3 pt-2">
+            <View className="flex-row pt-2" style={{ gap: 12 }}>
               <TouchableOpacity
                 onPress={handleReject}
                 disabled={rejectMutation.isPending}
                 style={{ minHeight: 44 }}
-                className="flex-1 bg-red-50 border border-red-200 rounded-xl items-center justify-center flex-row"
+                className={`flex-1 border rounded-xl items-center justify-center flex-row ${isDark ? 'bg-red-950/20 border-red-900/40' : 'bg-red-50 border border-red-200'}`}
               >
                 {rejectMutation.isPending && <ActivityIndicator size="small" color="#EF4444" className="mr-1.5" />}
-                <Text className="text-red-600 font-bold text-xs">Reject File</Text>
+                <Text className={`font-bold text-xs ${isDark ? 'text-red-400' : 'text-red-600'}`}>Reject File</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

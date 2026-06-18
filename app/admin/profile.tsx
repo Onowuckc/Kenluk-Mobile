@@ -235,10 +235,10 @@ export default function AdminProfileScreen() {
     disable2faMutation.isPending;
 
   return (
-    <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#080F26' : '#F8FAFC' }} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
+        style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }} className="p-4">
           
@@ -381,10 +381,10 @@ export default function AdminProfileScreen() {
 
                     {/* 2FA Setup Flow Panel */}
                     {twoFactorSetup && (
-                      <View className={`${inputBg} border ${inputBorder} rounded-2xl p-4 space-y-4 mt-2`}>
-                        <Text className={`text-xs font-bold ${textTitle}`}>Configure Authenticator</Text>
+                      <View className={`${inputBg} border ${inputBorder} rounded-2xl p-4 mt-2`}>
+                        <Text className={`text-xs font-bold ${textTitle} mb-4`}>Configure Authenticator</Text>
                         
-                        <View className="items-center py-2 bg-white rounded-xl border border-slate-200">
+                        <View className="items-center py-2 bg-white rounded-xl border border-slate-200 mb-4">
                           {twoFactorSetup.qrCodeDataUrl ? (
                             <Image
                               source={{ uri: twoFactorSetup.qrCodeDataUrl }}
@@ -396,11 +396,11 @@ export default function AdminProfileScreen() {
                           )}
                         </View>
 
-                        <Text className={`text-[10px] ${textLight} leading-relaxed`}>
+                        <Text className={`text-[10px] ${textLight} leading-relaxed mb-4`}>
                           Scan the QR code in your authenticator app (Google Authenticator, Duo, etc.) or manually enter the key below:
                         </Text>
 
-                        <View className={`${isDark ? 'bg-blue-950/45 border-blue-900/40' : 'bg-slate-200/50'} p-3 rounded-xl border flex-row justify-between items-center`}>
+                        <View className={`${isDark ? 'bg-blue-950/45 border-blue-900/40' : 'bg-slate-200/50'} p-3 rounded-xl border flex-row justify-between items-center mb-4`}>
                           <View className="flex-1 mr-2">
                             <Text className={`text-[9px] ${textMuted} font-bold uppercase`}>Manual Secret Key</Text>
                             <Text className={`text-xs font-mono font-bold ${textTitle} select-all mt-0.5`}>
@@ -410,8 +410,8 @@ export default function AdminProfileScreen() {
                           <Ionicons name="copy-outline" size={16} color={isDark ? '#60A5FA' : '#64748B'} />
                         </View>
 
-                        <View className="space-y-3">
-                          <Text className={`text-xs font-semibold ${textTitle}`}>Enter Verification Code</Text>
+                        <View className="mb-4">
+                          <Text className={`text-xs font-semibold ${textTitle} mb-1.5`}>Enter Verification Code</Text>
                           <TextInput
                             value={twoFactorCode}
                             onChangeText={(val) => setTwoFactorCode(val.replace(/\D/g, '').slice(0, 6))}
@@ -424,10 +424,10 @@ export default function AdminProfileScreen() {
                         </View>
 
                         {twoFactorMessage ? (
-                          <Text className="text-[10px] text-red-600 font-semibold">{twoFactorMessage}</Text>
+                          <Text className="text-[10px] text-red-600 font-semibold mb-4">{twoFactorMessage}</Text>
                         ) : null}
 
-                        <View className="flex-row space-x-2 pt-2">
+                        <View style={{ flexDirection: 'row', gap: 8, paddingTop: 8 }}>
                           <TouchableOpacity
                             onPress={handleConfirm2fa}
                             disabled={confirm2faMutation.isPending}
@@ -454,11 +454,11 @@ export default function AdminProfileScreen() {
 
                     {/* 2FA Disable Flow Panel */}
                     {isDisabling2fa && (
-                      <View className={`bg-red-50/50 border border-red-100 rounded-2xl p-4 space-y-4 mt-2`}>
-                        <Text className="text-xs font-bold text-red-900">Disable 2FA Security</Text>
+                      <View className={`bg-red-50/50 border border-red-100 rounded-2xl p-4 mt-2`}>
+                        <Text className="text-xs font-bold text-red-900 mb-4">Disable 2FA Security</Text>
                         
-                        <View className="space-y-3">
-                          <Text className="text-xs font-semibold text-red-800">Authenticator Code</Text>
+                        <View className="mb-4">
+                          <Text className="text-xs font-semibold text-red-800 mb-1.5">Authenticator Code</Text>
                           <TextInput
                             value={twoFactorCode}
                             onChangeText={(val) => setTwoFactorCode(val.replace(/\D/g, '').slice(0, 6))}
@@ -471,10 +471,10 @@ export default function AdminProfileScreen() {
                         </View>
 
                         {twoFactorMessage ? (
-                          <Text className="text-[10px] text-red-600 font-semibold">{twoFactorMessage}</Text>
+                          <Text className="text-[10px] text-red-600 font-semibold mb-4">{twoFactorMessage}</Text>
                         ) : null}
 
-                        <View className="flex-row space-x-2 pt-2">
+                        <View style={{ flexDirection: 'row', gap: 8, paddingTop: 8 }}>
                           <TouchableOpacity
                             onPress={handleDisable2fa}
                             disabled={disable2faMutation.isPending}

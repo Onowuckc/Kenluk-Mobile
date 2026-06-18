@@ -27,8 +27,8 @@ export default function LoginScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const themeMode = useSelector((state: RootState) => state.theme.mode);
-  const isDark = themeMode === 'dark';
+  // Auth screens consistently use the default theme (isDark = false)
+  const isDark = false;
 
   // Dynamic Theme Helpers
   const bgMain = isDark ? 'bg-[#080F26]' : 'bg-slate-900';

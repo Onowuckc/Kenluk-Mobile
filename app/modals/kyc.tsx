@@ -13,6 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../src/redux/store';
 
 import { kycApi } from '../../src/services/api';
 import { getDocumentTypeLabel, getBackendDocumentType } from '../../src/utils/documentTypeMap';
@@ -38,6 +40,17 @@ const KYC_SLOTS = [
 export default function KycModal() {
   const router = useRouter();
   const queryClient = useQueryClient();
+
+  const themeMode = useSelector((state: RootState) => state.theme.mode);
+  const isDark = themeMode === 'dark';
+
+  const bgMain = isDark ? 'bg-[#080F26]' : 'bg-white';
+  const bgCard = isDark ? 'bg-[#0F1E43]' : 'bg-white';
+  const borderCard = isDark ? 'border-[#1E356A]' : 'border-slate-100';
+  const textTitle = isDark ? 'text-white' : 'text-slate-900';
+  const textMuted = isDark ? 'text-slate-400' : 'text-slate-500';
+  const inputBg = isDark ? 'bg-[#121E42]' : 'bg-slate-50';
+  const inputBorder = isDark ? 'border-[#1F3978]' : 'border-slate-200';
   
   // Track which slot is currently uploading
   const [activeUploadingSlot, setActiveUploadingSlot] = useState<string | null>(null);
@@ -179,53 +192,65 @@ export default function KycModal() {
     switch (status?.toLowerCase()) {
       case 'approved':
       case 'verified':
-        return { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700' };
+        return {
+          bg: isDark ? 'bg-emerald-950/20 border-emerald-900/40' : 'bg-emerald-50 border border-emerald-200',
+          text: isDark ? 'text-emerald-400' : 'text-emerald-700'
+        };
       case 'pending':
-        return { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700' };
+        return {
+          bg: isDark ? 'bg-amber-950/20 border-amber-900/40' : 'bg-amber-50 border border-amber-200',
+          text: isDark ? 'text-amber-400' : 'text-amber-700'
+        };
       case 'rejected':
-        return { bg: 'bg-red-50 border-red-200', text: 'text-red-700' };
+        return {
+          bg: isDark ? 'bg-red-950/20 border-red-900/40' : 'bg-red-50 border border-red-200',
+          text: isDark ? 'text-red-400' : 'text-red-700'
+        };
       default:
-        return { bg: 'bg-slate-50 border-slate-200', text: 'text-slate-500' };
+        return {
+          bg: isDark ? 'bg-slate-900/20 border-slate-800/40' : 'bg-slate-50 border border-slate-200',
+          text: isDark ? 'text-slate-400' : 'text-slate-500'
+        };
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
+    <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View className="flex-row justify-between items-center px-4 py-3.5 border-b border-slate-100">
+      <View className={`flex-row justify-between items-center px-4 py-3.5 border-b ${borderCard}`}>
         <View>
-          <Text className="text-lg font-bold text-slate-900">KYC Verification</Text>
-          <Text className="text-[10px] text-slate-500 mt-0.5">Upload official documents to activate payments</Text>
+          <Text className={`text-lg font-bold ${textTitle}`}>KYC Verification</Text>
+          <Text className={`text-[10px] ${textMuted} mt-0.5`}>Upload official documents to activate payments</Text>
         </View>
         <TouchableOpacity
           onPress={() => router.back()}
           style={{ width: 36, height: 36 }}
-          className="items-center justify-center rounded-full bg-slate-100"
+          className={`items-center justify-center rounded-full ${inputBg}`}
         >
-          <Ionicons name="close" size={20} color="#64748B" />
+          <Ionicons name="close" size={20} color={isDark ? '#94A3B8' : '#64748B'} />
         </TouchableOpacity>
       </View>
 
       {isLoading ? (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#1E3A8A" />
+          <ActivityIndicator size="large" color="#3B82F6" />
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }} className="p-4">
           
           {/* Main Info Box */}
-          <View className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 mb-6">
+          <View className={`${isDark ? 'bg-blue-950/20 border-blue-900/40' : 'bg-blue-50/50 border border-blue-100'} rounded-2xl p-4 mb-6`}>
             <View className="flex-row items-center mb-1">
-              <Feather name="info" size={14} color="#2563EB" style={{ marginRight: 6 }} />
-              <Text className="text-xs font-bold text-blue-900">Compliance Information</Text>
+              <Feather name="info" size={14} color={isDark ? '#3B82F6' : '#2563EB'} style={{ marginRight: 6 }} />
+              <Text className={`text-xs font-bold ${isDark ? 'text-blue-300' : 'text-blue-900'}`}>Compliance Information</Text>
             </View>
-            <Text className="text-[10px] text-blue-800 leading-relaxed">
+            <Text className={`text-[10px] ${isDark ? 'text-blue-400' : 'text-blue-800'} leading-relaxed`}>
               Required by financial regulations. Please upload clear documents (PDF, JPG, or PNG) up to 5MB. Unverified accounts cannot process international vendor transfers.
             </Text>
           </View>
 
           {/* Slots List */}
-          <View className="space-y-4">
+          <View style={{ gap: 16 }}>
             {KYC_SLOTS.map((slot) => {
               const doc = getDocumentForSlot(slot.backendType);
               const status = doc?.status || 'not_uploaded';
@@ -233,9 +258,9 @@ export default function KycModal() {
               const isUploadingThisSlot = activeUploadingSlot === slot.key;
 
               return (
-                <View key={slot.key} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm mb-3">
+                <View key={slot.key} className={`${bgCard} border ${borderCard} rounded-2xl p-4 shadow-sm`}>
                   <View className="flex-row justify-between items-start mb-2">
-                    <Text className="text-xs font-bold text-slate-800 flex-1 pr-2">{slot.label}</Text>
+                    <Text className={`text-xs font-bold ${textTitle} flex-1 pr-2`}>{slot.label}</Text>
                     <View className={`px-2 py-0.5 rounded-full border ${statusInfo.bg}`}>
                       <Text className={`text-[9px] font-bold uppercase ${statusInfo.text}`}>
                         {doc ? getDocumentStatusLabel(status) : 'Not Uploaded'}
@@ -245,9 +270,9 @@ export default function KycModal() {
 
                   {/* Rejection Feedback alert */}
                   {status === 'rejected' && doc?.rejectionReason ? (
-                    <View className="bg-red-50/50 border border-red-100 p-3 rounded-xl mb-3 flex-row items-start space-x-2">
-                      <Feather name="alert-triangle" size={12} color="#EF4444" style={{ marginRight: 4, marginTop: 2 }} />
-                      <Text className="text-red-700 text-[10px] flex-1 leading-relaxed">
+                    <View className={`${isDark ? 'bg-red-950/20 border-red-900/40' : 'bg-red-50/50 border border-red-100'} p-3 rounded-xl mb-3 flex-row items-start`} style={{ gap: 8 }}>
+                      <Feather name="alert-triangle" size={12} color="#EF4444" style={{ marginTop: 2 }} />
+                      <Text className={`${isDark ? 'text-red-400' : 'text-red-700'} text-[10px] flex-1 leading-relaxed`}>
                         Reason: {doc.rejectionReason}
                       </Text>
                     </View>
@@ -255,38 +280,38 @@ export default function KycModal() {
 
                   {/* Upload Controls */}
                   {isUploadingThisSlot ? (
-                    <View className="bg-slate-50 border border-slate-100 p-4 rounded-xl items-center space-y-2">
-                      <ActivityIndicator size="small" color="#1E3A8A" />
-                      <Text className="text-[10px] text-slate-500 font-semibold">{uploadProgressMsg}</Text>
+                    <View className={`${inputBg} border ${inputBorder} p-4 rounded-xl items-center`} style={{ gap: 8 }}>
+                      <ActivityIndicator size="small" color="#3B82F6" />
+                      <Text className={`text-[10px] ${textMuted} font-semibold`}>{uploadProgressMsg}</Text>
                     </View>
                   ) : (
                     <View>
                       {status !== 'approved' && status !== 'verified' ? (
-                        <View className="flex-row space-x-3 mt-1">
+                        <View className="flex-row mt-1" style={{ gap: 12 }}>
                           <TouchableOpacity
                             onPress={() => handlePickDocument(slot.key, slot.backendType)}
                             disabled={activeUploadingSlot !== null}
                             style={{ minHeight: 40 }}
-                            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl items-center justify-center flex-row"
+                            className={`flex-1 ${inputBg} border ${inputBorder} rounded-xl items-center justify-center flex-row`}
                           >
-                            <Feather name="file-text" size={14} color="#64748B" style={{ marginRight: 6 }} />
-                            <Text className="text-slate-600 font-bold text-xs">Pick File</Text>
+                            <Feather name="file-text" size={14} color={isDark ? '#94A3B8' : '#64748B'} style={{ marginRight: 6 }} />
+                            <Text className={`${isDark ? 'text-slate-300' : 'text-slate-600'} font-bold text-xs`}>Pick File</Text>
                           </TouchableOpacity>
 
                           <TouchableOpacity
                             onPress={() => handleCapturePhoto(slot.key, slot.backendType)}
                             disabled={activeUploadingSlot !== null}
                             style={{ minHeight: 40 }}
-                            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl items-center justify-center flex-row"
+                            className={`flex-1 ${inputBg} border ${inputBorder} rounded-xl items-center justify-center flex-row`}
                           >
-                            <Feather name="camera" size={14} color="#64748B" style={{ marginRight: 6 }} />
-                            <Text className="text-slate-600 font-bold text-xs">Camera</Text>
+                            <Feather name="camera" size={14} color={isDark ? '#94A3B8' : '#64748B'} style={{ marginRight: 6 }} />
+                            <Text className={`${isDark ? 'text-slate-300' : 'text-slate-600'} font-bold text-xs`}>Camera</Text>
                           </TouchableOpacity>
                         </View>
                       ) : (
-                        <View className="bg-emerald-50/20 border border-emerald-100 p-3 rounded-xl flex-row items-center">
+                        <View className={`${isDark ? 'bg-emerald-950/20 border-emerald-900/40' : 'bg-emerald-50/20 border border-emerald-100'} p-3 rounded-xl flex-row items-center`}>
                           <Ionicons name="checkmark-circle" size={16} color="#10B981" style={{ marginRight: 6 }} />
-                          <Text className="text-emerald-700 text-[10px] font-semibold">
+                          <Text className={`${isDark ? 'text-emerald-400' : 'text-emerald-700'} text-[10px] font-semibold`}>
                             Verification completed. Document is verified.
                           </Text>
                         </View>

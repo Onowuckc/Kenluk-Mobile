@@ -12,8 +12,10 @@ import {
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
 
+import { RootState } from '../../src/redux/store';
 import { adminRatesApi } from '../../src/services/api';
 
 interface RatesResponse {
@@ -31,6 +33,18 @@ export default function AdminRatesScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+
+  const themeMode = useSelector((state: RootState) => state.theme.mode);
+  const isDark = themeMode === 'dark';
+
+  const bgMain = isDark ? 'bg-[#080F26]' : 'bg-slate-50';
+  const bgCard = isDark ? 'bg-[#0F1E43]' : 'bg-white';
+  const borderCard = isDark ? 'border-[#1E356A]' : 'border-slate-100';
+  const textTitle = isDark ? 'text-white' : 'text-slate-800';
+  const textMuted = isDark ? 'text-slate-400' : 'text-slate-500';
+  const inputBg = isDark ? 'bg-[#121E42]' : 'bg-slate-50';
+  const inputBorder = isDark ? 'border-[#1F3978]' : 'border-slate-200';
+  const textInputColor = isDark ? 'text-white' : 'text-slate-900';
 
   // Form states
   const [usdToNgn, setUsdToNgn] = useState('');
@@ -61,8 +75,7 @@ export default function AdminRatesScreen() {
     setRefreshing(false);
   }, [refetch]);
 
-  // Mutation
-  const updateRatesMutation = useMutation({
+  const updateRatesMutation = useMutation<any, any, { usdToNgnRate: number; ngnToUsdRate: number; notes: string }>({
     mutationFn: (data: { usdToNgnRate: number; ngnToUsdRate: number; notes: string }) =>
       adminRatesApi.updateRates(data),
     onSuccess: () => {
@@ -93,15 +106,18 @@ export default function AdminRatesScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top', 'left', 'right']}>
+    <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top', 'left', 'right']}>
       {/* Top Header */}
-      <View className="px-4 py-3.5 border-b border-slate-100 bg-white flex-row items-center space-x-3">
+      <View
+        className={`px-4 py-3.5 border-b flex-row items-center`}
+        style={{ gap: 12, borderBottomColor: isDark ? '#1E356A' : '#F1F5F9', backgroundColor: isDark ? '#0F1E43' : '#ffffff' }}
+      >
         <TouchableOpacity onPress={() => router.back()} className="p-1">
-          <Ionicons name="arrow-back" size={20} color="#1E3A8A" />
+          <Ionicons name="arrow-back" size={20} color={isDark ? '#60A5FA' : '#1E3A8A'} />
         </TouchableOpacity>
         <View className="flex-1">
-          <Text className="text-base font-bold text-slate-800">Treasury Rates</Text>
-          <Text className="text-[10px] text-slate-400 mt-0.5">Configure exchange rates and conversion margins</Text>
+          <Text className={`text-base font-bold ${textTitle}`}>Treasury Rates</Text>
+          <Text className={`text-[10px] ${textMuted} mt-0.5`}>Configure exchange rates and conversion margins</Text>
         </View>
       </View>
 
@@ -114,70 +130,75 @@ export default function AdminRatesScreen() {
       >
         {isLoading && !refreshing ? (
           <View className="flex-1 justify-center py-20">
-            <ActivityIndicator size="large" color="#1E3A8A" />
+            <ActivityIndicator size="large" color={isDark ? '#60A5FA' : '#1E3A8A'} />
           </View>
         ) : (
-          <View className="space-y-6">
+          <View style={{ gap: 24 }}>
             {/* Rates Card */}
-            <View className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm space-y-4">
-              <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Authoritative Exchange Rates</Text>
+            <View className={`border rounded-3xl p-5 shadow-sm ${bgCard} ${borderCard}`} style={{ gap: 16 }}>
+              <Text className={`text-xs font-bold uppercase tracking-wider pl-0.5 ${textMuted}`}>Authoritative Exchange Rates</Text>
 
-              <View className="space-y-3">
+              <View style={{ gap: 12 }}>
                 <View>
-                  <Text className="text-[10px] font-semibold text-slate-500 mb-1 pl-1">USD to NGN conversion (₦ per 1 USDC)</Text>
+                  <Text className={`text-[10px] font-semibold mb-1 pl-1 ${textMuted}`}>USD to NGN conversion (₦ per 1 USDC)</Text>
                   <TextInput
                     value={usdToNgn}
                     onChangeText={setUsdToNgn}
                     keyboardType="numeric"
                     placeholder="e.g. 1500"
-                    className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-slate-900 text-xs font-semibold"
+                    placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
+                    className={`border px-4 py-2.5 rounded-xl text-xs font-semibold ${inputBg} ${inputBorder} ${textInputColor}`}
                   />
                 </View>
 
                 <View>
-                  <Text className="text-[10px] font-semibold text-slate-500 mb-1 pl-1">NGN to USD conversion (USDC per ₦1)</Text>
+                  <Text className={`text-[10px] font-semibold mb-1 pl-1 ${textMuted}`}>NGN to USD conversion (USDC per ₦1)</Text>
                   <TextInput
                     value={ngnToUsd}
                     onChangeText={setNgnToUsd}
                     keyboardType="numeric"
                     placeholder="e.g. 0.00067"
-                    className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-slate-900 text-xs font-semibold"
+                    placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
+                    className={`border px-4 py-2.5 rounded-xl text-xs font-semibold ${inputBg} ${inputBorder} ${textInputColor}`}
                   />
                 </View>
               </View>
             </View>
 
             {/* Audit notes */}
-            <View className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm space-y-4">
-              <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Audit Trail & treasury Notes</Text>
+            <View className={`border rounded-3xl p-5 shadow-sm ${bgCard} ${borderCard}`} style={{ gap: 16 }}>
+              <Text className={`text-xs font-bold uppercase tracking-wider pl-0.5 ${textMuted}`}>Audit Trail & treasury Notes</Text>
               
               <View>
-                <Text className="text-[10px] font-semibold text-slate-500 mb-1 pl-1">Compliance Notes</Text>
+                <Text className={`text-[10px] font-semibold mb-1 pl-1 ${textMuted}`}>Compliance Notes</Text>
                 <TextInput
                   value={notes}
                   onChangeText={setNotes}
                   placeholder="Specify rate source or reason for treasury adjustment..."
-                  placeholderTextColor="#94A3B8"
+                  placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                   multiline={true}
                   numberOfLines={2}
-                  className="bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-slate-900 text-xs font-semibold h-16"
+                  className={`border px-4 py-3 rounded-2xl text-xs font-semibold h-16 ${inputBg} ${inputBorder} ${textInputColor}`}
                 />
               </View>
             </View>
 
             {/* Last updated summary info */}
             {rates?.updatedAt && (
-              <View className="bg-blue-50/40 border border-blue-100 p-4 rounded-2xl space-y-1.5">
+              <View
+                className={`border p-4 rounded-2xl ${isDark ? 'bg-blue-950/20 border-blue-900/40' : 'bg-blue-50/40 border-blue-100'}`}
+                style={{ gap: 6 }}
+              >
                 <View className="flex-row justify-between">
-                  <Text className="text-[9px] text-slate-400 font-semibold uppercase">Last Updated:</Text>
-                  <Text className="text-[9px] font-bold text-slate-700">
+                  <Text className={`text-[9px] font-semibold uppercase ${textMuted}`}>Last Updated:</Text>
+                  <Text className={`text-[9px] font-bold ${isDark ? 'text-blue-300' : 'text-slate-700'}`}>
                     {new Date(rates.updatedAt).toLocaleString()}
                   </Text>
                 </View>
                 {rates.lastUpdatedBy && (
                   <View className="flex-row justify-between">
-                    <Text className="text-[9px] text-slate-400 font-semibold uppercase">Updated By:</Text>
-                    <Text className="text-[9px] font-bold text-slate-700">
+                    <Text className={`text-[9px] font-semibold uppercase ${textMuted}`}>Updated By:</Text>
+                    <Text className={`text-[9px] font-bold ${isDark ? 'text-blue-300' : 'text-slate-700'}`}>
                       {rates.lastUpdatedBy.name} ({rates.lastUpdatedBy.email})
                     </Text>
                   </View>
@@ -200,3 +221,4 @@ export default function AdminRatesScreen() {
     </SafeAreaView>
   );
 }
+

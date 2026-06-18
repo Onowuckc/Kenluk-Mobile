@@ -13,7 +13,9 @@ import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
 
+import { RootState } from '../../src/redux/store';
 import { adminApi } from '../../src/services/api';
 
 interface User {
@@ -32,6 +34,18 @@ export default function AdminUsersScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+
+  const themeMode = useSelector((state: RootState) => state.theme.mode);
+  const isDark = themeMode === 'dark';
+
+  const bgMain = isDark ? 'bg-[#080F26]' : 'bg-slate-50';
+  const bgCard = isDark ? 'bg-[#0F1E43]' : 'bg-white';
+  const borderCard = isDark ? 'border-[#1E356A]' : 'border-slate-100';
+  const textTitle = isDark ? 'text-white' : 'text-slate-800';
+  const textMuted = isDark ? 'text-slate-400' : 'text-slate-500';
+  const inputBg = isDark ? 'bg-[#121E42]' : 'bg-slate-100';
+  const inputBorder = isDark ? 'border-[#1F3978]' : 'border-slate-200';
+  const textInputColor = isDark ? 'text-white' : 'text-slate-900';
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTab, setFilterTab] = useState<'all' | 'verified' | 'unverified' | 'admin'>('all');
@@ -62,7 +76,7 @@ export default function AdminUsersScreen() {
     onSuccess: (res: any) => {
       queryClient.invalidateQueries({ queryKey: ['admin-all-users'] });
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
-      Alert.alert('Cleanup Complete', res.message || 'Deleted unverified users successfully.');
+      Alert.alert('Success', res.message || 'Cleanup completed.');
     },
     onError: (err: any) => {
       Alert.alert('Error', err?.response?.data?.message || 'Failed to delete unverified users.');
@@ -71,8 +85,8 @@ export default function AdminUsersScreen() {
 
   const handleCleanupUnverified = () => {
     Alert.alert(
-      'Cleanup Unverified Users',
-      'Are you sure you want to delete all unverified accounts? This action cannot be undone.',
+      'Clean Up Unverified Accounts',
+      'This will permanently delete ALL users who have not verified their email address. Proceed?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -85,89 +99,113 @@ export default function AdminUsersScreen() {
   };
 
   const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      const matchesSearch =
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    let result = users;
 
-      const matchesFilter =
-        filterTab === 'all' ||
-        (filterTab === 'verified' && user.isVerified) ||
-        (filterTab === 'unverified' && !user.isVerified) ||
-        (filterTab === 'admin' && user.isAdmin);
+    if (searchTerm.trim().length > 0) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(
+        (u) =>
+          u.name.toLowerCase().includes(term) ||
+          u.email.toLowerCase().includes(term) ||
+          (u.companyName && u.companyName.toLowerCase().includes(term))
+      );
+    }
 
-      return matchesSearch && matchesFilter;
-    });
+    if (filterTab === 'verified') {
+      result = result.filter((u) => u.isVerified);
+    } else if (filterTab === 'unverified') {
+      result = result.filter((u) => !u.isVerified);
+    } else if (filterTab === 'admin') {
+      result = result.filter((u) => u.isAdmin);
+    }
+
+    return result;
   }, [users, searchTerm, filterTab]);
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top', 'left', 'right']}>
-      {/* Top Header */}
-      <View className="px-4 py-3.5 border-b border-slate-100 bg-white flex-row items-center justify-between">
+    <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top', 'left', 'right']}>
+      {/* Header with cleanup button */}
+      <View
+        className="px-4 py-3.5 border-b flex-row items-center justify-between"
+        style={{ borderBottomColor: isDark ? '#1E356A' : '#F1F5F9', backgroundColor: isDark ? '#0F1E43' : '#ffffff' }}
+      >
         <View>
-          <Text className="text-base font-bold text-slate-800">User Management</Text>
-          <Text className="text-[10px] text-slate-400 mt-0.5">Edit, review and moderate platform user profiles</Text>
+          <Text className={`text-base font-bold ${textTitle}`}>Registered Users</Text>
+          <Text className={`text-[10px] ${textMuted} mt-0.5`}>Onboarded clients and admins list</Text>
         </View>
 
         <TouchableOpacity
           onPress={handleCleanupUnverified}
           disabled={cleanupMutation.isPending}
-          className="bg-red-50 border border-red-200 px-3 py-1.5 rounded-xl flex-row items-center space-x-1.5"
+          className={`border px-3 py-1.5 rounded-xl flex-row items-center`}
+          style={{
+            borderColor: isDark ? '#5C1D24' : '#FECDD3',
+            backgroundColor: isDark ? '#311016' : '#FFF1F2',
+            gap: 6,
+          }}
         >
           {cleanupMutation.isPending ? (
             <ActivityIndicator size="small" color="#EF4444" />
           ) : (
             <Feather name="trash-2" size={12} color="#EF4444" />
           )}
-          <Text className="text-red-650 text-red-600 font-bold text-[10px]">Cleanup</Text>
+          <Text className="text-red-600 font-bold text-[10px]">Cleanup</Text>
         </TouchableOpacity>
       </View>
 
       {/* Search and filter controls */}
-      <View className="bg-white px-4 py-3 border-b border-slate-100 space-y-3">
+      <View
+        className="px-4 py-3 border-b"
+        style={{ borderBottomColor: isDark ? '#1E356A' : '#F1F5F9', backgroundColor: isDark ? '#0F1E43' : '#ffffff', gap: 12 }}
+      >
         {/* Search */}
-        <View className="flex-row items-center bg-slate-100 rounded-xl px-3 py-0.5">
-          <Feather name="search" size={14} color="#94A3B8" className="mr-2" />
+        <View
+          className="flex-row items-center rounded-xl px-3 py-0.5"
+          style={{ backgroundColor: isDark ? '#121E42' : '#F1F5F9', borderWidth: isDark ? 1 : 0, borderColor: '#1F3978' }}
+        >
+          <Feather name="search" size={14} color={isDark ? '#60A5FA' : '#94A3B8'} style={{ marginRight: 8 }} />
           <TextInput
             value={searchTerm}
             onChangeText={setSearchTerm}
             placeholder="Search by name or email..."
-            placeholderTextColor="#94A3B8"
-            className="flex-1 text-slate-900 text-xs py-2"
+            placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
+            className={`flex-1 text-xs py-2 ${textInputColor}`}
           />
           {searchTerm.length > 0 && (
             <TouchableOpacity onPress={() => setSearchTerm('')}>
-              <Ionicons name="close-circle" size={16} color="#94A3B8" />
+              <Ionicons name="close-circle" size={16} color={isDark ? '#60A5FA' : '#94A3B8'} />
             </TouchableOpacity>
           )}
         </View>
 
         {/* Filter Buttons */}
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="flex-row space-x-2">
-          {[
-            { label: 'All Users', value: 'all' as const, count: users.length },
-            { label: 'Verified', value: 'verified' as const, count: users.filter((u) => u.isVerified).length },
-            { label: 'Unverified', value: 'unverified' as const, count: users.filter((u) => !u.isVerified).length },
-            { label: 'Admins', value: 'admin' as const, count: users.filter((u) => u.isAdmin).length },
-          ].map((tab) => (
-            <TouchableOpacity
-              key={tab.value}
-              onPress={() => setFilterTab(tab.value)}
-              className={`px-3 py-2 rounded-xl border ${
-                filterTab === tab.value
-                  ? 'bg-blue-50 border-blue-200'
-                  : 'bg-slate-50 border-slate-150'
-              }`}
-            >
-              <Text
-                className={`text-[10px] font-bold ${
-                  filterTab === tab.value ? 'text-blue-900' : 'text-slate-500'
+        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
+          <View className="flex-row" style={{ gap: 8 }}>
+            {[
+              { label: 'All Users', value: 'all' as const, count: users.length },
+              { label: 'Verified', value: 'verified' as const, count: users.filter((u) => u.isVerified).length },
+              { label: 'Unverified', value: 'unverified' as const, count: users.filter((u) => !u.isVerified).length },
+              { label: 'Admins', value: 'admin' as const, count: users.filter((u) => u.isAdmin).length },
+            ].map((tab) => (
+              <TouchableOpacity
+                key={tab.value}
+                onPress={() => setFilterTab(tab.value)}
+                className={`px-3 py-2 rounded-xl border ${
+                  filterTab === tab.value
+                    ? (isDark ? 'bg-blue-900/30 border-blue-600' : 'bg-blue-50 border-blue-200')
+                    : (isDark ? 'bg-[#121E42] border-[#1F3978]' : 'bg-slate-50 border-slate-200')
                 }`}
               >
-                {tab.label} ({isLoading ? '...' : tab.count})
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  className={`text-[10px] font-bold ${
+                    filterTab === tab.value ? (isDark ? 'text-blue-300' : 'text-blue-900') : 'text-slate-500'
+                  }`}
+                >
+                  {tab.label} ({isLoading ? '...' : tab.count})
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </ScrollView>
       </View>
 
@@ -180,16 +218,16 @@ export default function AdminUsersScreen() {
       >
         {isLoading && !refreshing ? (
           <View className="flex-1 justify-center py-20">
-            <ActivityIndicator size="large" color="#1E3A8A" />
+            <ActivityIndicator size="large" color={isDark ? '#60A5FA' : '#1E3A8A'} />
           </View>
         ) : filteredUsers.length === 0 ? (
-          <View className="flex-1 justify-center items-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm mt-4">
-            <Feather name="users" size={48} color="#94A3B8" />
-            <Text className="text-sm font-bold text-slate-800 mt-3">No Users Found</Text>
-            <Text className="text-xs text-slate-400 mt-1">No profiles match the search/filter criteria.</Text>
+          <View className={`flex-1 justify-center items-center py-20 rounded-3xl border shadow-sm mt-4 ${bgCard} ${borderCard}`}>
+            <Feather name="users" size={48} color={isDark ? '#60A5FA' : '#94A3B8'} />
+            <Text className={`text-sm font-bold mt-3 ${textTitle}`}>No Users Found</Text>
+            <Text className={`text-xs mt-1 ${textMuted}`}>No profiles match the search/filter criteria.</Text>
           </View>
         ) : (
-          <View className="space-y-4">
+          <View style={{ gap: 16 }}>
             {filteredUsers.map((userItem) => (
               <TouchableOpacity
                 key={userItem._id}
@@ -199,55 +237,55 @@ export default function AdminUsersScreen() {
                     params: { userId: userItem._id },
                   })
                 }
-                className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm flex-row justify-between items-center"
+                className={`border rounded-3xl p-5 shadow-sm flex-row justify-between items-center ${bgCard} ${borderCard}`}
               >
-                <View className="flex-1 pr-3 space-y-2">
+                <View className="flex-1 pr-3" style={{ gap: 8 }}>
                   <View>
-                    <View className="flex-row items-center flex-wrap">
-                      <Text className="text-sm font-bold text-slate-800 mr-2">{userItem.name}</Text>
+                    <View className="flex-row items-center flex-wrap" style={{ gap: 6 }}>
+                      <Text className={`text-sm font-bold ${textTitle}`}>{userItem.name}</Text>
                       {userItem.isAdmin && (
-                        <View className="bg-purple-100 px-1.5 py-0.5 rounded">
-                          <Text className="text-[7.5px] font-bold text-purple-700 uppercase">Admin</Text>
+                        <View className={`px-1.5 py-0.5 rounded ${isDark ? 'bg-purple-950/40 border border-purple-900/30' : 'bg-purple-100'}`}>
+                          <Text className={`text-[7.5px] font-bold uppercase ${isDark ? 'text-purple-300' : 'text-purple-700'}`}>Admin</Text>
                         </View>
                       )}
                     </View>
-                    <Text className="text-[10px] text-slate-400 mt-0.5">{userItem.email}</Text>
+                    <Text className={`text-[10px] mt-0.5 ${textMuted}`}>{userItem.email}</Text>
                   </View>
 
-                  <View className="flex-row space-x-2 items-center flex-wrap">
-                    <View className={`px-2 py-0.5 rounded-full ${userItem.isVerified ? 'bg-emerald-55 bg-emerald-50' : 'bg-slate-100'}`}>
-                      <Text className={`text-[8.5px] font-bold uppercase ${userItem.isVerified ? 'text-emerald-700' : 'text-slate-500'}`}>
+                  <View className="flex-row items-center flex-wrap" style={{ gap: 8 }}>
+                    <View className={`px-2 py-0.5 rounded-full ${userItem.isVerified ? (isDark ? 'bg-emerald-950/30 border border-emerald-900/40' : 'bg-emerald-50') : (isDark ? 'bg-slate-900 border border-slate-800' : 'bg-slate-100')}`}>
+                      <Text className={`text-[8.5px] font-bold uppercase ${userItem.isVerified ? 'text-emerald-500' : 'text-slate-500'}`}>
                         {userItem.isVerified ? 'Verified' : 'Unverified'}
                       </Text>
                     </View>
 
                     <View className={`px-2 py-0.5 rounded-full ${
                       userItem.accountStatus === 'approved'
-                        ? 'bg-blue-50'
+                        ? (isDark ? 'bg-blue-950/30 border border-blue-900/40' : 'bg-blue-50')
                         : userItem.accountStatus === 'rejected'
-                        ? 'bg-red-50'
-                        : 'bg-amber-50'
+                        ? (isDark ? 'bg-red-950/20 border border-red-900/40' : 'bg-red-50')
+                        : (isDark ? 'bg-amber-950/20 border border-amber-900/40' : 'bg-amber-50')
                     }`}>
                       <Text className={`text-[8.5px] font-bold uppercase ${
                         userItem.accountStatus === 'approved'
-                          ? 'text-blue-75 text-blue-700'
+                          ? 'text-blue-500'
                           : userItem.accountStatus === 'rejected'
-                          ? 'text-red-700'
-                          : 'text-amber-700'
+                          ? 'text-red-500'
+                          : 'text-amber-500'
                       }`}>
                         {userItem.accountStatus}
                       </Text>
                     </View>
 
                     {userItem.companyName && (
-                      <View className="bg-slate-100 px-2 py-0.5 rounded-full">
-                        <Text className="text-[8.5px] text-slate-600 font-semibold">{userItem.companyName}</Text>
+                      <View className={`px-2 py-0.5 rounded-full ${isDark ? 'bg-slate-900 border border-slate-800' : 'bg-slate-100'}`}>
+                        <Text className={`text-[8.5px] font-semibold ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{userItem.companyName}</Text>
                       </View>
                     )}
                   </View>
                 </View>
 
-                <Ionicons name="chevron-forward" size={16} color="#94A3B8" />
+                <Ionicons name="chevron-forward" size={16} color={isDark ? '#60A5FA' : '#94A3B8'} />
               </TouchableOpacity>
             ))}
           </View>

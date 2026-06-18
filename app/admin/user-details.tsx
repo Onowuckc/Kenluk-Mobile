@@ -14,6 +14,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../src/redux/store';
 
 import { adminApi } from '../../src/services/api';
 
@@ -32,6 +34,18 @@ export default function UserDetailsScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { userId } = useLocalSearchParams<{ userId: string }>();
+
+  const themeMode = useSelector((state: RootState) => state.theme.mode);
+  const isDark = themeMode === 'dark';
+
+  const bgMain = isDark ? 'bg-[#080F26]' : 'bg-slate-50';
+  const bgCard = isDark ? 'bg-[#0F1E43]' : 'bg-white';
+  const borderCard = isDark ? 'border-[#1E356A]' : 'border-slate-100';
+  const textTitle = isDark ? 'text-white' : 'text-slate-800';
+  const textMuted = isDark ? 'text-slate-400' : 'text-slate-500';
+  const inputBg = isDark ? 'bg-[#121E42]' : 'bg-slate-50';
+  const inputBorder = isDark ? 'border-[#1F3978]' : 'border-slate-200';
+  const textInputColor = isDark ? 'text-white' : 'text-slate-900';
 
   // Fetch specific user
   const {
@@ -179,7 +193,7 @@ export default function UserDetailsScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-50 justify-center items-center">
+      <SafeAreaView className={`flex-1 ${bgMain} justify-center items-center`}>
         <ActivityIndicator size="large" color="#1E3A8A" />
       </SafeAreaView>
     );
@@ -187,9 +201,9 @@ export default function UserDetailsScreen() {
 
   if (isError || !user) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-50 justify-center items-center p-6">
+      <SafeAreaView className={`flex-1 ${bgMain} justify-center items-center p-6`}>
         <Ionicons name="alert-circle" size={48} color="#EF4444" />
-        <Text className="text-sm font-bold text-slate-800 mt-3">Failed to load user details.</Text>
+        <Text className={`text-sm font-bold ${textTitle} mt-3`}>Failed to load user details.</Text>
         <TouchableOpacity onPress={() => router.back()} className="mt-4 bg-blue-600 px-6 py-2.5 rounded-xl">
           <Text className="text-white font-bold text-xs">Go Back</Text>
         </TouchableOpacity>
@@ -198,122 +212,137 @@ export default function UserDetailsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top', 'left', 'right']}>
+    <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top', 'left', 'right']}>
       {/* Top Header */}
-      <View className="px-4 py-3.5 border-b border-slate-100 bg-white flex-row items-center space-x-3">
+      <View style={{ gap: 12 }} className={`px-4 py-3.5 border-b ${borderCard} ${bgCard} flex-row items-center`}>
         <TouchableOpacity onPress={() => router.back()} className="p-1">
-          <Ionicons name="arrow-back" size={20} color="#1E3A8A" />
+          <Ionicons name="arrow-back" size={20} color={isDark ? '#60A5FA' : '#1E3A8A'} />
         </TouchableOpacity>
         <View className="flex-1">
-          <Text className="text-base font-bold text-slate-800">User Inspector</Text>
-          <Text className="text-[10px] text-slate-400 mt-0.5">Admin profile and account moderation workflow</Text>
+          <Text className={`text-base font-bold ${textTitle}`}>User Inspector</Text>
+          <Text className={`text-[10px] ${textMuted} mt-0.5`}>Admin profile and account moderation workflow</Text>
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }} className="p-4 space-y-6">
-        {/* Onboarding Status Decisions */}
-        {user.accountStatus === 'pending' && (
-          <View className="bg-amber-50 border border-amber-250 p-5 rounded-3xl space-y-3 shadow-sm">
-            <View className="flex-row items-center space-x-2">
-              <Ionicons name="alert-circle" size={16} color="#B45309" />
-              <Text className="text-xs font-bold text-amber-900">Onboarding Status: Pending</Text>
-            </View>
-            <Text className="text-[10px] text-amber-700 leading-relaxed">
-              This user has submitted onboarding verification. Review their profile details below and make an onboarding approval decision.
-            </Text>
-            <View className="flex-row space-x-2.5 pt-1">
-              <TouchableOpacity
-                onPress={() => setShowRejectModal(true)}
-                className="flex-1 bg-white border border-red-200 py-2.5 rounded-xl items-center"
-              >
-                <Text className="text-red-650 text-red-650 text-red-650 text-red-600 font-bold text-xs">Reject User</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleApproveAccount}
-                className="flex-1 bg-emerald-600 py-2.5 rounded-xl items-center"
-              >
-                <Text className="text-white font-bold text-xs">Approve User</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-
-        {/* User Card Info Form */}
-        <View className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm space-y-4">
-          <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Account Metadata</Text>
-
-          <View className="space-y-3">
-            <View>
-              <Text className="text-[10px] font-semibold text-slate-500 mb-1 pl-1">Full Name</Text>
-              <TextInput
-                value={name}
-                onChangeText={setName}
-                placeholder="Enter user name"
-                className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-slate-900 text-xs font-semibold"
-              />
-            </View>
-
-            <View>
-              <Text className="text-[10px] font-semibold text-slate-500 mb-1 pl-1">Email Address</Text>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder="you@company.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-slate-900 text-xs font-semibold"
-              />
-            </View>
-
-            <View>
-              <Text className="text-[10px] font-semibold text-slate-500 mb-1 pl-1">Company Name</Text>
-              <TextInput
-                value={companyName}
-                onChangeText={setCompanyName}
-                placeholder="Company Name"
-                className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-slate-900 text-xs font-semibold"
-              />
-            </View>
-
-            <View>
-              <Text className="text-[10px] font-semibold text-slate-500 mb-1 pl-1">Phone Number</Text>
-              <TextInput
-                value={phone}
-                onChangeText={setPhone}
-                placeholder="Phone number"
-                keyboardType="phone-pad"
-                className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-slate-900 text-xs font-semibold"
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Credentials Toggles */}
-        <View className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm space-y-4">
-          <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Permissions & Verification</Text>
-
-          <View className="space-y-4">
-            <View className="flex-row justify-between items-center">
-              <View>
-                <Text className="text-xs font-bold text-slate-700">Verified Status</Text>
-                <Text className="text-[9px] text-slate-400 mt-0.5">Toggle verification badge</Text>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }} className="p-4">
+        <View style={{ gap: 24 }}>
+          {/* Onboarding Status Decisions */}
+          {user.accountStatus === 'pending' && (
+            <View style={{ gap: 12 }} className={`${isDark ? 'bg-amber-950/25 border-amber-900/50' : 'bg-amber-50 border-amber-200'} p-5 rounded-3xl shadow-sm`}>
+              <View style={{ gap: 8 }} className="flex-row items-center">
+                <Ionicons name="alert-circle" size={16} color={isDark ? '#F59E0B' : '#B45309'} />
+                <Text className={`text-xs font-bold ${isDark ? 'text-amber-400' : 'text-amber-900'}`}>Onboarding Status: Pending</Text>
               </View>
-              <Switch value={isVerified} onValueChange={setIsVerified} />
-            </View>
-
-            <View className="flex-row justify-between items-center border-t border-slate-50 pt-4">
-              <View>
-                <Text className="text-xs font-bold text-slate-700">Admin Privileges</Text>
-                <Text className="text-[9px] text-slate-400 mt-0.5">Grant administrative control credentials</Text>
+              <Text className={`text-[10px] ${isDark ? 'text-amber-300' : 'text-amber-700'} leading-relaxed`}>
+                This user has submitted onboarding verification. Review their profile details below and make an onboarding approval decision.
+              </Text>
+              <View style={{ gap: 10 }} className="flex-row pt-1">
+                <TouchableOpacity
+                  onPress={() => setShowRejectModal(true)}
+                  className={`flex-1 ${isDark ? 'bg-red-950/20 border-red-900/40' : 'bg-white border-red-200'} border py-2.5 rounded-xl items-center`}
+                >
+                  <Text className="text-red-600 font-bold text-xs">Reject User</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleApproveAccount}
+                  className="flex-1 bg-emerald-600 py-2.5 rounded-xl items-center"
+                >
+                  <Text className="text-white font-bold text-xs">Approve User</Text>
+                </TouchableOpacity>
               </View>
-              <Switch value={isAdmin} onValueChange={setIsAdmin} />
+            </View>
+          )}
+
+          {/* User Card Info Form */}
+          <View style={{ gap: 16 }} className={`${bgCard} border ${borderCard} rounded-3xl p-5 shadow-sm`}>
+            <Text className={`text-xs font-bold ${textMuted} uppercase tracking-wider pl-0.5`}>Account Metadata</Text>
+
+            <View style={{ gap: 12 }}>
+              <View>
+                <Text className={`text-[10px] font-semibold ${textMuted} mb-1 pl-1`}>Full Name</Text>
+                <TextInput
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Enter user name"
+                  placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                  className={`${inputBg} border ${inputBorder} px-4 py-2.5 rounded-xl ${textInputColor} text-xs font-semibold`}
+                />
+              </View>
+
+              <View>
+                <Text className={`text-[10px] font-semibold ${textMuted} mb-1 pl-1`}>Email Address</Text>
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="you@company.com"
+                  placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  className={`${inputBg} border ${inputBorder} px-4 py-2.5 rounded-xl ${textInputColor} text-xs font-semibold`}
+                />
+              </View>
+
+              <View>
+                <Text className={`text-[10px] font-semibold ${textMuted} mb-1 pl-1`}>Company Name</Text>
+                <TextInput
+                  value={companyName}
+                  onChangeText={setCompanyName}
+                  placeholder="Company Name"
+                  placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                  className={`${inputBg} border ${inputBorder} px-4 py-2.5 rounded-xl ${textInputColor} text-xs font-semibold`}
+                />
+              </View>
+
+              <View>
+                <Text className={`text-[10px] font-semibold ${textMuted} mb-1 pl-1`}>Phone Number</Text>
+                <TextInput
+                  value={phone}
+                  onChangeText={setPhone}
+                  placeholder="Phone number"
+                  placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                  keyboardType="phone-pad"
+                  className={`${inputBg} border ${inputBorder} px-4 py-2.5 rounded-xl ${textInputColor} text-xs font-semibold`}
+                />
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* Update & Delete Actions */}
-        <View className="space-y-3">
-          <TouchableOpacity
+          {/* Credentials Toggles */}
+          <View style={{ gap: 16 }} className={`${bgCard} border ${borderCard} rounded-3xl p-5 shadow-sm`}>
+            <Text className={`text-xs font-bold ${textMuted} uppercase tracking-wider pl-0.5`}>Permissions & Verification</Text>
+
+            <View style={{ gap: 16 }}>
+              <View className="flex-row justify-between items-center">
+                <View>
+                  <Text className={`text-xs font-bold ${textTitle}`}>Verified Status</Text>
+                  <Text className={`text-[9px] ${textMuted} mt-0.5`}>Toggle verification badge</Text>
+                </View>
+                <Switch
+                  value={isVerified}
+                  onValueChange={setIsVerified}
+                  trackColor={{ false: '#767577', true: '#3B82F6' }}
+                  thumbColor={isVerified ? '#F4F3F4' : '#F4F3F4'}
+                />
+              </View>
+
+              <View className={`flex-row justify-between items-center border-t ${borderCard} pt-4`}>
+                <View>
+                  <Text className={`text-xs font-bold ${textTitle}`}>Admin Privileges</Text>
+                  <Text className={`text-[9px] ${textMuted} mt-0.5`}>Grant administrative control credentials</Text>
+                </View>
+                <Switch
+                  value={isAdmin}
+                  onValueChange={setIsAdmin}
+                  trackColor={{ false: '#767577', true: '#3B82F6' }}
+                  thumbColor={isAdmin ? '#F4F3F4' : '#F4F3F4'}
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* Update & Delete Actions */}
+          <View style={{ gap: 12 }}>
+            <TouchableOpacity
             onPress={handleUpdate}
             disabled={updateMutation.isPending}
             style={{ minHeight: 44 }}
@@ -328,48 +357,49 @@ export default function UserDetailsScreen() {
               onPress={handleDelete}
               disabled={deleteMutation.isPending}
               style={{ minHeight: 44 }}
-              className="bg-red-50 border border-red-200 rounded-xl items-center justify-center flex-row"
+              className={`${isDark ? 'bg-red-950/20 border-red-900/40' : 'bg-red-50 border-red-200'} border rounded-xl items-center justify-center flex-row`}
             >
               {deleteMutation.isPending && <ActivityIndicator size="small" color="#EF4444" className="mr-1.5" />}
-              <Text className="text-red-650 text-red-650 text-red-600 font-bold text-xs">Delete User profile</Text>
+              <Text className="text-red-600 font-bold text-xs">Delete User profile</Text>
             </TouchableOpacity>
           )}
         </View>
-      </ScrollView>
+      </View>
+    </ScrollView>
 
       {/* Rejection Modal */}
       <Modal visible={showRejectModal} animationType="slide" transparent={true} onRequestClose={() => setShowRejectModal(false)}>
         <View className="flex-1 bg-black/50 justify-end">
-          <View className="bg-white rounded-t-3xl p-6 space-y-4">
-            <View className="flex-row justify-between items-center border-b border-slate-100 pb-3 mb-1">
+          <View style={{ gap: 16 }} className={`${bgCard} rounded-t-3xl p-6`}>
+            <View className={`flex-row justify-between items-center border-b ${borderCard} pb-3 mb-1`}>
               <View>
-                <Text className="text-base font-bold text-slate-800">Reject User Onboarding</Text>
-                <Text className="text-[10px] text-slate-400 mt-0.5">Specify reasons for rejecting user verification</Text>
+                <Text className={`text-base font-bold ${textTitle}`}>Reject User Onboarding</Text>
+                <Text className={`text-[10px] ${textMuted} mt-0.5`}>Specify reasons for rejecting user verification</Text>
               </View>
               <TouchableOpacity onPress={() => setShowRejectModal(false)} className="p-1">
-                <Ionicons name="close" size={24} color="#64748B" />
+                <Ionicons name="close" size={24} color={isDark ? '#94A3B8' : '#64748B'} />
               </TouchableOpacity>
             </View>
 
-            <View className="space-y-2">
-              <Text className="text-xs font-semibold text-slate-700">Rejection reason (Min 10 characters)</Text>
+            <View style={{ gap: 8 }}>
+              <Text className={`text-xs font-semibold ${textTitle}`}>Rejection reason (Min 10 characters)</Text>
               <TextInput
                 value={rejectionReason}
                 onChangeText={setRejectionReason}
                 placeholder="State reasons: failed BVN match, invalid document copies, etc."
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                 multiline={true}
                 numberOfLines={3}
-                className="bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-slate-900 text-xs font-medium h-20"
+                className={`${inputBg} border ${inputBorder} px-4 py-3 rounded-2xl ${textInputColor} text-xs font-medium h-20`}
               />
             </View>
 
             <View className="flex-row space-x-3 pt-2">
               <TouchableOpacity
                 onPress={() => setShowRejectModal(false)}
-                className="flex-1 bg-slate-100 rounded-xl items-center justify-center py-3"
+                className={`flex-1 ${isDark ? 'bg-slate-800' : 'bg-slate-100'} rounded-xl items-center justify-center py-3`}
               >
-                <Text className="text-slate-700 font-bold text-xs">Cancel</Text>
+                <Text className={`${isDark ? 'text-slate-350' : 'text-slate-700'} font-bold text-xs`}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

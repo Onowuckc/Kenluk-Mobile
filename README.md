@@ -1,6 +1,6 @@
-# Reap Payment Mobile App (`reap-payment-mobile`)
+# Kenluk Mobile App (`reap-payment-mobile`)
 
-This is the cross-platform mobile application companion for the Reap Payment fintech portal. It is built using **React Native**, **Expo (SDK 51)**, **Expo Router (File-Based Navigation)**, **Redux Toolkit**, and styled using **NativeWind (Tailwind CSS)**.
+This is the cross-platform mobile application companion for the Kenluk fintech portal. It is built using **React Native**, **Expo (SDK 51)**, **Expo Router (File-Based Navigation)**, **Redux Toolkit**, and styled using **NativeWind (Tailwind CSS)**.
 
 ---
 

@@ -50,6 +50,18 @@ export default function PaymentsScreen() {
   const { user } = useSelector((state: RootState) => state.auth);
   const { summary } = useSelector((state: RootState) => state.wallet || { summary: null });
 
+  const themeMode = useSelector((state: RootState) => state.theme.mode);
+  const isDark = themeMode === 'dark';
+
+  const bgMain = isDark ? 'bg-[#080F26]' : 'bg-slate-50';
+  const bgCard = isDark ? 'bg-[#0F1E43]' : 'bg-white';
+  const borderCard = isDark ? 'border-[#1E356A]' : 'border-slate-150';
+  const textTitle = isDark ? 'text-white' : 'text-slate-800';
+  const textMuted = isDark ? 'text-slate-400' : 'text-slate-500';
+  const inputBg = isDark ? 'bg-[#121E42]' : 'bg-slate-50';
+  const inputBorder = isDark ? 'border-[#1F3978]' : 'border-slate-200';
+  const textInputColor = isDark ? 'text-white' : 'text-slate-900';
+
   const isCompanyPaymentAccount = useMemo(() => {
     return (
       (user as any)?.accountType === 'company' ||
@@ -385,16 +397,16 @@ export default function PaymentsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-fintech-background" edges={['top', 'left', 'right']}>
+    <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
         {/* Top Header */}
-        <View className="px-4 py-3.5 border-b border-fintech-border bg-white flex-row justify-between items-center">
+        <View className={`px-4 py-3.5 border-b ${borderCard} ${bgCard} flex-row justify-between items-center`}>
           <View>
-            <Text className="text-lg font-bold text-fintech-text">Make Payment</Text>
-            <Text className="text-[10px] text-fintech-textMuted mt-0.5">
+            <Text className={`text-lg font-bold ${textTitle}`}>Make Payment</Text>
+            <Text className={`text-[10px] ${textMuted} mt-0.5`}>
               Submit international transfer requests for approval
             </Text>
           </View>
@@ -406,16 +418,16 @@ export default function PaymentsScreen() {
                 if (step === 'upload') setStep('payer');
               }}
               style={{ minWidth: 44, minHeight: 44 }}
-              className="items-center justify-center rounded-full bg-slate-100 px-3"
+              className={`items-center justify-center rounded-full ${isDark ? 'bg-slate-800' : 'bg-slate-100'} px-3`}
             >
-              <Text className="text-xs font-bold text-fintech-primary">Back</Text>
+              <Text className="text-xs font-bold text-blue-500">Back</Text>
             </TouchableOpacity>
           )}
         </View>
 
         {/* Step Progress Indicators */}
         {step !== 'success' && (
-          <View className="bg-white px-4 py-2 border-b border-fintech-border flex-row items-center justify-between">
+          <View className={`${bgCard} px-4 py-2 border-b ${borderCard} flex-row items-center justify-between`}>
             {[
               { label: 'Recipient', num: 1, active: step === 'recipient', done: ['amount', 'payer', 'upload'].includes(step) },
               { label: 'Amount', num: 2, active: step === 'amount', done: ['payer', 'upload'].includes(step) },
@@ -423,14 +435,14 @@ export default function PaymentsScreen() {
               { label: 'Invoice', num: 4, active: step === 'upload', done: false },
             ].map((s, idx) => (
               <React.Fragment key={s.num}>
-                <View className="flex-row items-center space-x-1">
+                <View style={{ gap: 4 }} className="flex-row items-center">
                   <View
                     className={`w-5 h-5 rounded-full items-center justify-center border ${
                       s.active
-                        ? 'bg-fintech-primary border-fintech-primary'
+                        ? 'bg-blue-600 border-blue-600'
                         : s.done
-                        ? 'bg-fintech-accent border-fintech-accent'
-                        : 'bg-white border-slate-300'
+                        ? 'bg-emerald-600 border-emerald-600'
+                        : isDark ? 'bg-[#121E42] border-[#1F3978]' : 'bg-white border-slate-300'
                     }`}
                   >
                     {s.done ? (
@@ -438,7 +450,7 @@ export default function PaymentsScreen() {
                     ) : (
                       <Text
                         className={`text-[10px] font-bold ${
-                          s.active ? 'text-white' : 'text-slate-500'
+                          s.active ? 'text-white' : textMuted
                         }`}
                       >
                         {s.num}
@@ -447,13 +459,13 @@ export default function PaymentsScreen() {
                   </View>
                   <Text
                     className={`text-[10px] font-bold ${
-                      s.active ? 'text-fintech-primary' : s.done ? 'text-fintech-accent' : 'text-slate-400'
+                      s.active ? 'text-blue-500' : s.done ? 'text-emerald-500' : textMuted
                     }`}
                   >
                     {s.label}
                   </Text>
                 </View>
-                {idx < 3 && <View className="flex-1 h-[1px] bg-slate-200 mx-2" />}
+                {idx < 3 && <View className={`flex-1 h-[1px] ${isDark ? 'bg-[#1E356A]' : 'bg-slate-200'} mx-2`} />}
               </React.Fragment>
             ))}
           </View>
@@ -461,88 +473,95 @@ export default function PaymentsScreen() {
 
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="p-4">
           {step === 'recipient' && (
-            <View className="bg-white rounded-3xl p-5 border border-fintech-border shadow-sm">
+            <View className={`${bgCard} rounded-3xl p-5 border ${borderCard} shadow-sm`}>
               <View className="flex-row justify-between items-center mb-4">
-                <Text className="text-sm font-bold text-fintech-primary">Recipient Info</Text>
+                <Text className="text-sm font-bold text-blue-500">Recipient Info</Text>
                 <TouchableOpacity
                   onPress={() => setShowBeneficiaryModal(true)}
                   style={{ minHeight: 44 }}
-                  className="px-3 border border-fintech-secondary/30 rounded-xl justify-center bg-blue-50/40"
+                  className={`px-3 border ${isDark ? 'border-blue-900/60' : 'border-fintech-secondary/30'} rounded-xl justify-center ${isDark ? 'bg-blue-950/20' : 'bg-blue-50/40'}`}
                 >
-                  <Text className="text-[11px] font-bold text-fintech-secondary">Select Beneficiary</Text>
+                  <Text className="text-[11px] font-bold text-blue-500">Select Beneficiary</Text>
                 </TouchableOpacity>
               </View>
 
-              <View className="space-y-3">
+              <View style={{ gap: 12 }}>
                 <View>
-                  <Text className="text-xs font-semibold text-fintech-text mb-1">Recipient Company Name *</Text>
+                  <Text className={`text-xs font-semibold ${textTitle} mb-1`}>Recipient Company Name *</Text>
                   <TextInput
                     value={recipientCompany}
                     onChangeText={setRecipientCompany}
                     placeholder="e.g. Acme Corporation Ltd"
-                    className="bg-fintech-background border border-fintech-border px-4 py-3 rounded-xl text-fintech-text text-sm font-semibold"
+                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                    className={`${inputBg} border ${inputBorder} px-4 py-3 rounded-xl ${textInputColor} text-sm font-semibold`}
                   />
                 </View>
 
                 <View>
-                  <Text className="text-xs font-semibold text-fintech-text mb-1">Recipient Address *</Text>
+                  <Text className={`text-xs font-semibold ${textTitle} mb-1`}>Recipient Address *</Text>
                   <TextInput
                     value={recipientAddress}
                     onChangeText={setRecipientAddress}
                     placeholder="e.g. Suite 4B, Central Business District"
-                    className="bg-fintech-background border border-fintech-border px-4 py-3 rounded-xl text-fintech-text text-sm font-semibold"
+                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                    className={`${inputBg} border ${inputBorder} px-4 py-3 rounded-xl ${textInputColor} text-sm font-semibold`}
                   />
                 </View>
 
                 <View>
-                  <Text className="text-xs font-semibold text-fintech-text mb-1">Recipient Bank Name *</Text>
+                  <Text className={`text-xs font-semibold ${textTitle} mb-1`}>Recipient Bank Name *</Text>
                   <TextInput
                     value={recipientBank}
                     onChangeText={setRecipientBank}
                     placeholder="e.g. Standard Chartered Bank"
-                    className="bg-fintech-background border border-fintech-border px-4 py-3 rounded-xl text-fintech-text text-sm font-semibold"
+                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                    className={`${inputBg} border ${inputBorder} px-4 py-3 rounded-xl ${textInputColor} text-sm font-semibold`}
                   />
                 </View>
 
-                <View className="flex-row space-x-3">
+                <View style={{ gap: 12 }} className="flex-row">
                   <View className="flex-1">
-                    <Text className="text-xs font-semibold text-fintech-text mb-1">SWIFT Code *</Text>
+                    <Text className={`text-xs font-semibold ${textTitle} mb-1`}>SWIFT Code *</Text>
                     <TextInput
                       value={recipientBankSwiftCode}
                       onChangeText={(val) => setRecipientBankSwiftCode(val.toUpperCase())}
                       placeholder="8 or 11 chars"
+                      placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                       autoCapitalize="characters"
-                      className="bg-fintech-background border border-fintech-border px-3 py-2.5 rounded-xl text-fintech-text text-sm font-semibold"
+                      className={`${inputBg} border ${inputBorder} px-3 py-2.5 rounded-xl ${textInputColor} text-sm font-semibold`}
                     />
                   </View>
                   <View className="flex-1">
-                    <Text className="text-xs font-semibold text-fintech-text mb-1">Account Number *</Text>
+                    <Text className={`text-xs font-semibold ${textTitle} mb-1`}>Account Number *</Text>
                     <TextInput
                       value={accountNumber}
                       onChangeText={setAccountNumber}
                       placeholder="IBAN or Acct No"
-                      className="bg-fintech-background border border-fintech-border px-3 py-2.5 rounded-xl text-fintech-text text-sm font-semibold"
+                      placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                      className={`${inputBg} border ${inputBorder} px-3 py-2.5 rounded-xl ${textInputColor} text-sm font-semibold`}
                     />
                   </View>
                 </View>
 
                 <View>
-                  <Text className="text-xs font-semibold text-fintech-text mb-1">Recipient Bank Country *</Text>
+                  <Text className={`text-xs font-semibold ${textTitle} mb-1`}>Recipient Bank Country *</Text>
                   <TextInput
                     value={recipientBankCountry}
                     onChangeText={setRecipientBankCountry}
                     placeholder="e.g. United Kingdom"
-                    className="bg-fintech-background border border-fintech-border px-4 py-3 rounded-xl text-fintech-text text-sm font-semibold"
+                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                    className={`${inputBg} border ${inputBorder} px-4 py-3 rounded-xl ${textInputColor} text-sm font-semibold`}
                   />
                 </View>
 
                 <View>
-                  <Text className="text-xs font-semibold text-fintech-text mb-1">Recipient Bank Address *</Text>
+                  <Text className={`text-xs font-semibold ${textTitle} mb-1`}>Recipient Bank Address *</Text>
                   <TextInput
                     value={recipientBankAddress}
                     onChangeText={setRecipientBankAddress}
                     placeholder="e.g. 10 Basinghall St, London"
-                    className="bg-fintech-background border border-fintech-border px-4 py-3 rounded-xl text-fintech-text text-sm font-semibold"
+                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                    className={`${inputBg} border ${inputBorder} px-4 py-3 rounded-xl ${textInputColor} text-sm font-semibold`}
                   />
                 </View>
               </View>
@@ -550,7 +569,7 @@ export default function PaymentsScreen() {
               <TouchableOpacity
                 onPress={handleNextToAmount}
                 style={{ minHeight: 44 }}
-                className="bg-fintech-primary py-3 rounded-xl items-center mt-6 justify-center"
+                className="bg-blue-600 py-3 rounded-xl items-center mt-6 justify-center"
               >
                 <Text className="text-white font-bold text-sm">Next: Payment Details</Text>
               </TouchableOpacity>
@@ -558,79 +577,80 @@ export default function PaymentsScreen() {
           )}
 
           {step === 'amount' && (
-            <View className="bg-white rounded-3xl p-5 border border-fintech-border shadow-sm space-y-4">
-              <Text className="text-sm font-bold text-fintech-primary mb-1">Payment Amount</Text>
+            <View style={{ gap: 16 }} className={`${bgCard} rounded-3xl p-5 border ${borderCard} shadow-sm`}>
+              <Text className="text-sm font-bold text-blue-500 mb-1">Payment Amount</Text>
 
-              <View className="flex-row items-end space-x-3">
+              <View style={{ gap: 12 }} className="flex-row items-end">
                 <View className="flex-1">
-                  <Text className="text-xs font-semibold text-fintech-text mb-1">Foreign Amount *</Text>
+                  <Text className={`text-xs font-semibold ${textTitle} mb-1`}>Foreign Amount *</Text>
                   <TextInput
                     value={foreignAmount}
                     onChangeText={setForeignAmount}
                     placeholder="0.00"
+                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                     keyboardType="numeric"
-                    className="bg-fintech-background border border-fintech-border px-4 py-3 rounded-xl text-fintech-text text-sm font-semibold"
+                    className={`${inputBg} border ${inputBorder} px-4 py-3 rounded-xl ${textInputColor} text-sm font-semibold`}
                   />
                 </View>
                 <TouchableOpacity
                   onPress={() => setShowCurrencyModal(true)}
-                  style={{ minHeight: 44 }}
-                  className="bg-fintech-background border border-fintech-border px-4 py-3 rounded-xl flex-row items-center justify-between w-28"
+                  style={{ minHeight: 44, gap: 8 }}
+                  className={`${inputBg} border ${inputBorder} px-4 py-3 rounded-xl flex-row items-center justify-between w-28`}
                 >
-                  <Text className="text-fintech-text font-bold text-sm">{foreignCurrency}</Text>
-                  <Feather name="chevron-down" size={16} color="#64748B" />
+                  <Text className={`${textTitle} font-bold text-sm`}>{foreignCurrency}</Text>
+                  <Feather name="chevron-down" size={16} color={isDark ? '#94A3B8' : '#64748B'} />
                 </TouchableOpacity>
               </View>
 
               {/* Rate & NGN Info Card */}
-              <View className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2.5">
+              <View style={{ gap: 10 }} className={`${isDark ? 'bg-[#121E42]' : 'bg-slate-50'} border ${borderCard} rounded-2xl p-4`}>
                 <View className="flex-row justify-between items-center">
-                  <Text className="text-[11px] text-fintech-textMuted">Exchange Rate:</Text>
-                  <Text className="text-xs font-bold text-fintech-text">
+                  <Text className={`text-[11px] ${textMuted}`}>Exchange Rate:</Text>
+                  <Text className={`text-xs font-bold ${textTitle}`}>
                     1 {foreignCurrency} = ₦{exchangeRate.toLocaleString()}
                   </Text>
                 </View>
-                <View className="flex-row justify-between items-center border-t border-slate-200/60 pt-2.5">
-                  <Text className="text-[11px] text-fintech-textMuted">Amount in NGN:</Text>
-                  <Text className="text-sm font-bold text-fintech-primary">
+                <View className={`flex-row justify-between items-center border-t ${borderCard} pt-2.5`}>
+                  <Text className={`text-[11px] ${textMuted}`}>Amount in NGN:</Text>
+                  <Text className="text-sm font-bold text-blue-500">
                     ₦{localAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </Text>
                 </View>
-                <Text className="text-[9px] text-fintech-textMuted leading-normal">
+                <Text className={`text-[9px] ${textMuted} leading-normal`}>
                   * Live platform rate determined by administrator. Outflow local equivalent is calculated based on this exchange rate.
                 </Text>
               </View>
 
               {/* Wallet Validation Widget */}
               {!isCompanyPaymentAccount && localAmount > 0 && (
-                <View className="bg-blue-50/40 border border-blue-100 rounded-2xl p-4">
-                  <Text className="text-[10px] font-bold text-blue-900 mb-1.5 uppercase tracking-wider">
+                <View className={`${isDark ? 'bg-blue-950/20 border-blue-900/40' : 'bg-blue-50/40 border border-blue-100'} rounded-2xl p-4`}>
+                  <Text className={`text-[10px] font-bold ${isDark ? 'text-blue-400' : 'text-blue-900'} mb-1.5 uppercase tracking-wider`}>
                     Balance Check
                   </Text>
                   <View className="flex-row justify-between mb-1">
-                    <Text className="text-[10px] text-slate-500">Available Wallet Balance:</Text>
-                    <Text className="text-[10px] font-bold text-slate-800">
+                    <Text className={`text-[10px] ${textMuted}`}>Available Wallet Balance:</Text>
+                    <Text className={`text-[10px] font-bold ${textTitle}`}>
                       ₦{(summary?.balance || 0).toLocaleString()}
                     </Text>
                   </View>
-                  <View className="flex-row justify-between border-t border-slate-200/50 pt-1 mt-1">
-                    <Text className="text-[10px] text-slate-500">Local Outflow Required:</Text>
-                    <Text className="text-[10px] font-bold text-slate-800">
+                  <View className={`flex-row justify-between border-t ${borderCard} pt-1 mt-1`}>
+                    <Text className={`text-[10px] ${textMuted}`}>Local Outflow Required:</Text>
+                    <Text className={`text-[10px] font-bold ${textTitle}`}>
                       ₦{localAmount.toLocaleString()}
                     </Text>
                   </View>
 
                   {(summary?.balance || 0) < localAmount ? (
-                    <View className="bg-red-50 border border-red-100 p-2.5 rounded-xl flex-row items-center mt-3">
+                    <View className={`${isDark ? 'bg-red-950/20 border-red-900/40' : 'bg-red-50 border border-red-100'} p-2.5 rounded-xl flex-row items-center mt-3`}>
                       <Feather name="alert-circle" size={14} color="#EF4444" style={{ marginRight: 6 }} />
-                      <Text className="text-red-700 text-[10px] font-semibold flex-1">
+                      <Text className="text-red-650 text-[10px] font-semibold flex-1">
                         Insufficient balance. You need an additional ₦{(localAmount - (summary?.balance || 0)).toLocaleString()} to process this payment.
                       </Text>
                     </View>
                   ) : (
-                    <View className="bg-emerald-50 border border-emerald-100 p-2.5 rounded-xl flex-row items-center mt-3">
+                    <View className={`${isDark ? 'bg-emerald-950/20 border-emerald-900/40' : 'bg-emerald-50 border border-emerald-100'} p-2.5 rounded-xl flex-row items-center mt-3`}>
                       <Feather name="check-circle" size={14} color="#10B981" style={{ marginRight: 6 }} />
-                      <Text className="text-emerald-700 text-[10px] font-semibold flex-1">
+                      <Text className="text-emerald-600 text-[10px] font-semibold flex-1">
                         Sufficient NGN balance available to fund this transfer.
                       </Text>
                     </View>
@@ -642,7 +662,7 @@ export default function PaymentsScreen() {
                 onPress={handleNextToPayer}
                 disabled={isValidatingBalance}
                 style={{ minHeight: 44 }}
-                className="bg-fintech-primary py-3 rounded-xl items-center mt-4 justify-center flex-row"
+                className="bg-blue-600 py-3 rounded-xl items-center mt-4 justify-center flex-row"
               >
                 {isValidatingBalance && <ActivityIndicator size="small" color="#FFFFFF" className="mr-2" />}
                 <Text className="text-white font-bold text-sm">
@@ -653,70 +673,76 @@ export default function PaymentsScreen() {
           )}
 
           {step === 'payer' && (
-            <View className="bg-white rounded-3xl p-5 border border-fintech-border shadow-sm space-y-4">
-              <Text className="text-sm font-bold text-fintech-primary mb-1">Invoice Payer Details</Text>
+            <View style={{ gap: 16 }} className={`${bgCard} rounded-3xl p-5 border ${borderCard} shadow-sm`}>
+              <Text className="text-sm font-bold text-blue-500 mb-1">Invoice Payer Details</Text>
 
-              <View className="space-y-3">
+              <View style={{ gap: 12 }}>
                 <View>
-                  <Text className="text-xs font-semibold text-fintech-text mb-1">Original Payer Name *</Text>
+                  <Text className={`text-xs font-semibold ${textTitle} mb-1`}>Original Payer Name *</Text>
                   <TextInput
                     value={originalPayerName}
                     onChangeText={setOriginalPayerName}
                     placeholder="Individual or Company Name on Invoice"
-                    className="bg-fintech-background border border-fintech-border px-4 py-3 rounded-xl text-fintech-text text-sm font-semibold"
+                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                    className={`${inputBg} border ${inputBorder} px-4 py-3 rounded-xl ${textInputColor} text-sm font-semibold`}
                   />
                 </View>
 
                 <View>
-                  <Text className="text-xs font-semibold text-fintech-text mb-1">Street Address *</Text>
+                  <Text className={`text-xs font-semibold ${textTitle} mb-1`}>Street Address *</Text>
                   <TextInput
                     value={payerStreet}
                     onChangeText={setPayerStreet}
                     placeholder="Payer Street Address"
-                    className="bg-fintech-background border border-fintech-border px-4 py-3 rounded-xl text-fintech-text text-sm font-semibold"
+                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                    className={`${inputBg} border ${inputBorder} px-4 py-3 rounded-xl ${textInputColor} text-sm font-semibold`}
                   />
                 </View>
 
-                <View className="flex-row space-x-3">
+                <View style={{ gap: 12 }} className="flex-row">
                   <View className="flex-1">
-                    <Text className="text-xs font-semibold text-fintech-text mb-1">City *</Text>
+                    <Text className={`text-xs font-semibold ${textTitle} mb-1`}>City *</Text>
                     <TextInput
                       value={payerCity}
                       onChangeText={setPayerCity}
                       placeholder="Hong Kong"
-                      className="bg-fintech-background border border-fintech-border px-3 py-2.5 rounded-xl text-fintech-text text-sm font-semibold"
+                      placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                      className={`${inputBg} border ${inputBorder} px-3 py-2.5 rounded-xl ${textInputColor} text-sm font-semibold`}
                     />
                   </View>
                   <View className="flex-1">
-                    <Text className="text-xs font-semibold text-fintech-text mb-1">State/Region *</Text>
+                    <Text className={`text-xs font-semibold ${textTitle} mb-1`}>State/Region *</Text>
                     <TextInput
                       value={payerState}
                       onChangeText={setPayerState}
                       placeholder="HK"
-                      className="bg-fintech-background border border-fintech-border px-3 py-2.5 rounded-xl text-fintech-text text-sm font-semibold"
+                      placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                      className={`${inputBg} border ${inputBorder} px-3 py-2.5 rounded-xl ${textInputColor} text-sm font-semibold`}
                     />
                   </View>
                 </View>
 
-                <View className="flex-row space-x-3">
+                <View style={{ gap: 12 }} className="flex-row">
                   <View className="flex-1">
-                    <Text className="text-xs font-semibold text-fintech-text mb-1">Country ISO Code *</Text>
+                    <Text className={`text-xs font-semibold ${textTitle} mb-1`}>Country ISO Code *</Text>
                     <TextInput
                       value={payerCountry}
                       onChangeText={(val) => setPayerCountry(val.toUpperCase())}
                       placeholder="e.g. HK"
+                      placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                       maxLength={2}
                       autoCapitalize="characters"
-                      className="bg-fintech-background border border-fintech-border px-3 py-2.5 rounded-xl text-fintech-text text-sm font-semibold"
+                      className={`${inputBg} border ${inputBorder} px-3 py-2.5 rounded-xl ${textInputColor} text-sm font-semibold`}
                     />
                   </View>
                   <View className="flex-1">
-                    <Text className="text-xs font-semibold text-fintech-text mb-1">Postal Code *</Text>
+                    <Text className={`text-xs font-semibold ${textTitle} mb-1`}>Postal Code *</Text>
                     <TextInput
                       value={payerPostalCode}
                       onChangeText={setPayerPostalCode}
                       placeholder="000000"
-                      className="bg-fintech-background border border-fintech-border px-3 py-2.5 rounded-xl text-fintech-text text-sm font-semibold"
+                      placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                      className={`${inputBg} border ${inputBorder} px-3 py-2.5 rounded-xl ${textInputColor} text-sm font-semibold`}
                     />
                   </View>
                 </View>
@@ -725,7 +751,7 @@ export default function PaymentsScreen() {
               <TouchableOpacity
                 onPress={handleNextToUpload}
                 style={{ minHeight: 44 }}
-                className="bg-fintech-primary py-3 rounded-xl items-center mt-6"
+                className="bg-blue-600 py-3 rounded-xl items-center mt-6"
               >
                 <Text className="text-white font-bold text-sm">Next: Upload Invoice</Text>
               </TouchableOpacity>
@@ -733,28 +759,28 @@ export default function PaymentsScreen() {
           )}
 
           {step === 'upload' && (
-            <View className="bg-white rounded-3xl p-5 border border-fintech-border shadow-sm space-y-4">
-              <Text className="text-sm font-bold text-fintech-primary mb-1">Invoice Document</Text>
-              <Text className="text-xs text-fintech-textMuted leading-relaxed">
+            <View style={{ gap: 16 }} className={`${bgCard} rounded-3xl p-5 border ${borderCard} shadow-sm`}>
+              <Text className="text-sm font-bold text-blue-500 mb-1">Invoice Document</Text>
+              <Text className={`text-xs ${textMuted} leading-relaxed`}>
                 Provide a valid vendor invoice matching your payment request. Acceptable formats are PDF, JPG, and PNG up to 10MB.
               </Text>
 
               {activeUploading ? (
-                <View className="bg-slate-50 border border-slate-100 p-6 rounded-2xl items-center space-y-3">
+                <View style={{ gap: 12 }} className={`${isDark ? 'bg-[#121E42]' : 'bg-slate-50'} border ${borderCard} p-6 rounded-2xl items-center`}>
                   <ActivityIndicator size="large" color="#1E3A8A" />
-                  <Text className="text-xs text-fintech-primary font-bold">{uploadProgressMsg}</Text>
+                  <Text className="text-xs text-blue-500 font-bold">{uploadProgressMsg}</Text>
                 </View>
               ) : (
-                <View className="space-y-4">
+                <View style={{ gap: 16 }}>
                   {invoiceFile ? (
-                    <View className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex-row items-center justify-between">
-                      <View className="flex-row items-center flex-1 pr-3">
-                        <Feather name="file-text" size={24} color="#64748B" style={{ marginRight: 10 }} />
+                    <View className={`${isDark ? 'bg-[#121E42]' : 'bg-slate-50'} border ${borderCard} p-4 rounded-2xl flex-row items-center justify-between`}>
+                      <View style={{ gap: 10 }} className="flex-row items-center flex-1 pr-3">
+                        <Feather name="file-text" size={24} color={isDark ? '#94A3B8' : '#64748B'} />
                         <View className="flex-1">
-                          <Text numberOfLines={1} className="text-xs font-bold text-slate-800">
+                          <Text numberOfLines={1} className={`text-xs font-bold ${textTitle}`}>
                             {invoiceFile.name}
                           </Text>
-                          <Text className="text-[10px] text-slate-400">
+                          <Text className={`text-[10px] ${textMuted}`}>
                             {invoiceFile.mimeType}
                           </Text>
                         </View>
@@ -762,51 +788,51 @@ export default function PaymentsScreen() {
                       <TouchableOpacity
                         onPress={() => setInvoiceFile(null)}
                         style={{ minWidth: 44, minHeight: 44 }}
-                        className="items-center justify-center bg-red-50 rounded-full w-10 h-10"
+                        className={`${isDark ? 'bg-red-950/20' : 'bg-red-50'} rounded-full w-10 h-10 items-center justify-center`}
                       >
                         <Ionicons name="trash-outline" size={16} color="#EF4444" />
                       </TouchableOpacity>
                     </View>
                   ) : (
-                    <View className="flex-row space-x-3">
+                    <View style={{ gap: 12 }} className="flex-row">
                       <TouchableOpacity
                         onPress={handlePickDocument}
-                        style={{ minHeight: 48 }}
-                        className="flex-1 bg-slate-50 border border-dashed border-slate-300 rounded-2xl items-center justify-center flex-row"
+                        style={{ minHeight: 48, gap: 6 }}
+                        className={`${isDark ? 'bg-[#121E42]' : 'bg-slate-50'} border border-dashed ${isDark ? 'border-blue-900/60' : 'border-slate-300'} rounded-2xl items-center justify-center flex-row flex-1`}
                       >
-                        <Feather name="file-plus" size={16} color="#64748B" style={{ marginRight: 6 }} />
-                        <Text className="text-slate-600 font-bold text-xs">Upload File</Text>
+                        <Feather name="file-plus" size={16} color={isDark ? '#94A3B8' : '#64748B'} />
+                        <Text className={`${isDark ? 'text-slate-300' : 'text-slate-600'} font-bold text-xs`}>Upload File</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
                         onPress={handleCapturePhoto}
-                        style={{ minHeight: 48 }}
-                        className="flex-1 bg-slate-50 border border-dashed border-slate-300 rounded-2xl items-center justify-center flex-row"
+                        style={{ minHeight: 48, gap: 6 }}
+                        className={`${isDark ? 'bg-[#121E42]' : 'bg-slate-50'} border border-dashed ${isDark ? 'border-blue-900/60' : 'border-slate-300'} rounded-2xl items-center justify-center flex-row flex-1`}
                       >
-                        <Feather name="camera" size={16} color="#64748B" style={{ marginRight: 6 }} />
-                        <Text className="text-slate-600 font-bold text-xs">Snap Photo</Text>
+                        <Feather name="camera" size={16} color={isDark ? '#94A3B8' : '#64748B'} />
+                        <Text className={`${isDark ? 'text-slate-300' : 'text-slate-600'} font-bold text-xs`}>Snap Photo</Text>
                       </TouchableOpacity>
                     </View>
                   )}
 
                   {/* Summary of Transaction */}
-                  <View className="bg-slate-50 border border-slate-100 rounded-2xl p-4 mt-2">
-                    <Text className="text-[10px] font-bold text-slate-700 uppercase mb-2">Review Outflow Details</Text>
-                    <View className="space-y-1.5">
+                  <View className={`${isDark ? 'bg-[#121E42]' : 'bg-slate-50'} border ${borderCard} rounded-2xl p-4 mt-2`}>
+                    <Text className={`text-[10px] font-bold ${textTitle} uppercase mb-2`}>Review Outflow Details</Text>
+                    <View style={{ gap: 6 }}>
                       <View className="flex-row justify-between">
-                        <Text className="text-[10px] text-slate-400">Recipient:</Text>
-                        <Text className="text-[10px] font-bold text-slate-800">{recipientCompany}</Text>
+                        <Text className={`text-[10px] ${textMuted}`}>Recipient:</Text>
+                        <Text className={`text-[10px] font-bold ${textTitle}`}>{recipientCompany}</Text>
                       </View>
                       <View className="flex-row justify-between">
-                        <Text className="text-[10px] text-slate-400">Amount:</Text>
-                        <Text className="text-[10px] font-bold text-slate-800">
+                        <Text className={`text-[10px] ${textMuted}`}>Amount:</Text>
+                        <Text className={`text-[10px] font-bold ${textTitle}`}>
                           {getCurrencySymbol(foreignCurrency)}
                           {parseFloat(foreignAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })} ({foreignCurrency})
                         </Text>
                       </View>
                       <View className="flex-row justify-between">
-                        <Text className="text-[10px] text-slate-400">Local Equiv:</Text>
-                        <Text className="text-[10px] font-bold text-fintech-primary">₦{localAmount.toLocaleString()}</Text>
+                        <Text className={`text-[10px] ${textMuted}`}>Local Equiv:</Text>
+                        <Text className={`text-[10px] font-bold ${isDark ? 'text-blue-400' : 'text-blue-900'}`}>₦{localAmount.toLocaleString()}</Text>
                       </View>
                     </View>
                   </View>
@@ -816,7 +842,7 @@ export default function PaymentsScreen() {
                     disabled={!invoiceFile}
                     style={{ minHeight: 44 }}
                     className={`py-3.5 rounded-xl items-center mt-6 ${
-                      invoiceFile ? 'bg-fintech-primary' : 'bg-slate-300'
+                      invoiceFile ? 'bg-blue-600' : isDark ? 'bg-slate-800' : 'bg-slate-350'
                     }`}
                   >
                     <Text className="text-white font-bold text-sm">Submit Payment Request</Text>
@@ -827,45 +853,45 @@ export default function PaymentsScreen() {
           )}
 
           {step === 'success' && (
-            <View className="bg-white rounded-3xl p-6 border border-fintech-border shadow-sm items-center py-10 space-y-6">
+            <View style={{ gap: 24 }} className={`${bgCard} rounded-3xl p-6 border ${borderCard} shadow-sm items-center py-10`}>
               <View className="w-16 h-16 rounded-full bg-emerald-100 items-center justify-center">
                 <Ionicons name="checkmark-circle" size={44} color="#10B981" />
               </View>
 
-              <View className="space-y-2">
-                <Text className="text-lg font-bold text-slate-800 text-center">Payment Submitted!</Text>
-                <Text className="text-xs text-fintech-textMuted text-center px-4 leading-relaxed">
+              <View style={{ gap: 8 }}>
+                <Text className={`text-lg font-bold ${textTitle} text-center`}>Payment Submitted!</Text>
+                <Text className={`text-xs ${textMuted} text-center px-4 leading-relaxed`}>
                   Your international vendor transfer request has been successfully submitted and is waiting for administrator approval.
                 </Text>
               </View>
 
-              <View className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
+              <View style={{ gap: 8 }} className={`w-full ${isDark ? 'bg-[#121E42]' : 'bg-slate-50'} border ${borderCard} rounded-2xl p-4`}>
                 <View className="flex-row justify-between">
-                  <Text className="text-[10px] text-slate-400">Status:</Text>
-                  <Text className="text-[10px] font-bold text-amber-700 uppercase bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                  <Text className={`text-[10px] ${textMuted}`}>Status:</Text>
+                  <Text className={`text-[10px] font-bold text-amber-700 uppercase ${isDark ? 'bg-amber-950/30' : 'bg-amber-50'} px-2 py-0.5 rounded border border-amber-200`}>
                     Waiting Admin Approval
                   </Text>
                 </View>
                 <View className="flex-row justify-between">
-                  <Text className="text-[10px] text-slate-400">Recipient:</Text>
-                  <Text className="text-[10px] font-bold text-slate-800">{recipientCompany}</Text>
+                  <Text className={`text-[10px] ${textMuted}`}>Recipient:</Text>
+                  <Text className={`text-[10px] font-bold ${textTitle}`}>{recipientCompany}</Text>
                 </View>
                 <View className="flex-row justify-between">
-                  <Text className="text-[10px] text-slate-400">Amount:</Text>
-                  <Text className="text-[10px] font-bold text-slate-800">
+                  <Text className={`text-[10px] ${textMuted}`}>Amount:</Text>
+                  <Text className={`text-[10px] font-bold ${textTitle}`}>
                     {getCurrencySymbol(foreignCurrency)}{parseFloat(foreignAmount).toLocaleString()} ({foreignCurrency})
                   </Text>
                 </View>
               </View>
 
-              <View className="w-full space-y-3">
+              <View style={{ gap: 12 }} className="w-full">
                 <TouchableOpacity
                   onPress={() => {
                     // Navigate to history tab using router
                     router.push('/(tabs)/history' as any);
                   }}
                   style={{ minHeight: 44 }}
-                  className="bg-fintech-primary py-3 rounded-xl items-center justify-center w-full"
+                  className="bg-blue-600 py-3 rounded-xl items-center justify-center w-full"
                 >
                   <Text className="text-white font-bold text-sm">View Request History</Text>
                 </TouchableOpacity>
@@ -873,9 +899,9 @@ export default function PaymentsScreen() {
                 <TouchableOpacity
                   onPress={handleResetForm}
                   style={{ minHeight: 44 }}
-                  className="bg-slate-100 py-3 rounded-xl items-center justify-center w-full"
+                  className={`py-3 rounded-xl items-center justify-center w-full ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}
                 >
-                  <Text className="text-slate-600 font-bold text-sm">Submit New Transfer</Text>
+                  <Text className={`${isDark ? 'text-slate-300' : 'text-slate-700'} font-bold text-sm`}>Submit New Transfer</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -890,44 +916,46 @@ export default function PaymentsScreen() {
         animationType="slide"
         onRequestClose={() => setShowBeneficiaryModal(false)}
       >
-        <View className="flex-1 justify-end bg-black/40">
-          <View className="bg-white rounded-t-3xl p-5 max-h-[80%] min-h-[40%]">
-            <View className="flex-row justify-between items-center pb-3 border-b border-slate-100 mb-4">
-              <Text className="text-base font-bold text-slate-800">Select Beneficiary</Text>
+        <View className="flex-1 bg-black/40 justify-end">
+          <View className={`${bgCard} rounded-t-3xl p-5 max-h-[80%] min-h-[40%]`}>
+            <View className={`flex-row justify-between items-center pb-3 border-b ${borderCard} mb-4`}>
+              <Text className={`text-base font-bold ${textTitle}`}>Select Beneficiary</Text>
               <TouchableOpacity
                 onPress={() => setShowBeneficiaryModal(false)}
                 style={{ minWidth: 44, minHeight: 44 }}
-                className="items-center justify-center rounded-full bg-slate-100 w-8 h-8"
+                className={`items-center justify-center rounded-full ${isDark ? 'bg-slate-800' : 'bg-slate-100'} w-8 h-8`}
               >
-                <Ionicons name="close" size={20} color="#64748B" />
+                <Ionicons name="close" size={20} color={isDark ? '#94A3B8' : '#64748B'} />
               </TouchableOpacity>
             </View>
 
             {beneficiaries.length === 0 ? (
               <View className="items-center justify-center py-12">
                 <Feather name="users" size={40} color="#94A3B8" />
-                <Text className="text-slate-800 text-xs font-bold mt-2">No saved beneficiaries</Text>
-                <Text className="text-slate-400 text-[10px] text-center mt-1 px-4 leading-normal">
+                <Text className={`text-slate-800 text-xs font-bold mt-2 ${textTitle}`}>No saved beneficiaries</Text>
+                <Text className={`text-slate-400 text-[10px] text-center mt-1 px-4 leading-normal ${textMuted}`}>
                   Beneficiaries are automatically saved to your callbook once you submit your first international transfer.
                 </Text>
               </View>
             ) : (
-              <ScrollView className="space-y-3 pb-6">
-                {beneficiaries.map((b: any) => (
-                  <TouchableOpacity
-                    key={b._id}
-                    onPress={() => handleSelectBeneficiary(b)}
-                    className="p-3.5 border border-slate-100 rounded-2xl bg-slate-50 flex-row items-center justify-between mb-2"
-                  >
-                    <View className="flex-1 pr-2">
-                      <Text className="text-xs font-bold text-slate-800">{b.recipientCompany}</Text>
-                      <Text className="text-[10px] text-slate-500 mt-1">
-                        {b.recipientBank} • {b.accountNumber}
-                      </Text>
-                    </View>
-                    <Feather name="chevron-right" size={16} color="#94A3B8" />
-                  </TouchableOpacity>
-                ))}
+              <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+                <View style={{ gap: 8 }}>
+                  {beneficiaries.map((b: any) => (
+                    <TouchableOpacity
+                      key={b._id}
+                      onPress={() => handleSelectBeneficiary(b)}
+                      className={`p-3.5 border ${borderCard} rounded-2xl ${isDark ? 'bg-[#121E42]' : 'bg-slate-50'} flex-row items-center justify-between`}
+                    >
+                      <View className="flex-1 pr-2">
+                        <Text className={`text-xs font-bold ${textTitle}`}>{b.recipientCompany}</Text>
+                        <Text className={`text-[10px] ${textMuted} mt-1`}>
+                          {b.recipientBank} • {b.accountNumber}
+                        </Text>
+                      </View>
+                      <Feather name="chevron-right" size={16} color={isDark ? '#64748B' : '#94A3B8'} />
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </ScrollView>
             )}
           </View>
@@ -941,43 +969,45 @@ export default function PaymentsScreen() {
         animationType="slide"
         onRequestClose={() => setShowCurrencyModal(false)}
       >
-        <View className="flex-1 justify-end bg-black/40">
-          <View className="bg-white rounded-t-3xl p-5 min-h-[30%]">
-            <View className="flex-row justify-between items-center pb-3 border-b border-slate-100 mb-4">
-              <Text className="text-base font-bold text-slate-800">Select Currency</Text>
+        <View className="flex-1 bg-black/40 justify-end">
+          <View className={`${bgCard} rounded-t-3xl p-5 min-h-[30%]`}>
+            <View className={`flex-row justify-between items-center pb-3 border-b ${borderCard} mb-4`}>
+              <Text className={`text-base font-bold ${textTitle}`}>Select Currency</Text>
               <TouchableOpacity
                 onPress={() => setShowCurrencyModal(false)}
                 style={{ minWidth: 44, minHeight: 44 }}
-                className="items-center justify-center rounded-full bg-slate-100 w-8 h-8"
+                className={`items-center justify-center rounded-full ${isDark ? 'bg-slate-800' : 'bg-slate-100'} w-8 h-8`}
               >
-                <Ionicons name="close" size={20} color="#64748B" />
+                <Ionicons name="close" size={20} color={isDark ? '#94A3B8' : '#64748B'} />
               </TouchableOpacity>
             </View>
 
-            <ScrollView className="space-y-2 pb-6">
-              {currencies.map((c) => (
-                <TouchableOpacity
-                  key={c.code}
-                  onPress={() => {
-                    setForeignCurrency(c.code);
-                    setShowCurrencyModal(false);
-                  }}
-                  className={`p-3.5 rounded-2xl flex-row items-center justify-between border ${
-                    foreignCurrency === c.code
-                      ? 'bg-blue-50 border-blue-200'
-                      : 'bg-slate-50 border-slate-100'
-                  }`}
-                >
-                  <View>
-                    <Text className="text-xs font-bold text-slate-800">
-                      {c.code} - {c.name}
-                    </Text>
-                  </View>
-                  {foreignCurrency === c.code && (
-                    <Ionicons name="checkmark-circle" size={18} color="#2563EB" />
-                  )}
-                </TouchableOpacity>
-              ))}
+            <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+              <View style={{ gap: 8 }}>
+                {currencies.map((c) => (
+                  <TouchableOpacity
+                    key={c.code}
+                    onPress={() => {
+                      setForeignCurrency(c.code);
+                      setShowCurrencyModal(false);
+                    }}
+                    className={`p-3.5 rounded-2xl flex-row items-center justify-between border ${
+                      foreignCurrency === c.code
+                        ? isDark ? 'bg-blue-950/40 border-blue-800/60' : 'bg-blue-50 border-blue-200'
+                        : isDark ? 'bg-[#121E42] border-transparent' : 'bg-slate-50 border-slate-100'
+                    }`}
+                  >
+                    <View>
+                      <Text className={`text-xs font-bold ${textTitle}`}>
+                        {c.code} - {c.name}
+                      </Text>
+                    </View>
+                    {foreignCurrency === c.code && (
+                      <Ionicons name="checkmark-circle" size={18} color="#3B82F6" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
             </ScrollView>
           </View>
         </View>

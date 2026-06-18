@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Reap Payment Mobile",
-    "slug": "reap-payment-mobile",
+    "name": "Kenluk",
+    "slug": "kenluk-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "reap-payment",
+    "scheme": "kenluk",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -14,14 +14,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kenluk.reappayment"
+      "bundleIdentifier": "com.kenluk.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1e293b"
       },
-      "package": "com.kenluk.reappayment"
+      "package": "com.kenluk.app"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -32,6 +32,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "078cd510-89e5-4cf8-9820-3488ce389e3f"
+      }
+    },
+    "owner": "onowuckc"
   }
 }

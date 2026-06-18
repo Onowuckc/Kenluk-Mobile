@@ -15,6 +15,8 @@ import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../src/redux/store';
 
 import { paymentsApi } from '../../src/services/api';
 
@@ -43,6 +45,18 @@ export default function AdminPaymentsQueueScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+
+  const themeMode = useSelector((state: RootState) => state.theme.mode);
+  const isDark = themeMode === 'dark';
+
+  const bgMain = isDark ? 'bg-[#080F26]' : 'bg-slate-50';
+  const bgCard = isDark ? 'bg-[#0F1E43]' : 'bg-white';
+  const borderCard = isDark ? 'border-[#1E356A]' : 'border-slate-100';
+  const textTitle = isDark ? 'text-white' : 'text-slate-800';
+  const textMuted = isDark ? 'text-slate-400' : 'text-slate-500';
+  const inputBg = isDark ? 'bg-[#121E42]' : 'bg-slate-50';
+  const inputBorder = isDark ? 'border-[#1F3978]' : 'border-slate-200';
+  const textInputColor = isDark ? 'text-white' : 'text-slate-900';
 
   // Filter tab state: 'pending' | 'actionable' | 'all'
   const [filterTab, setFilterTab] = useState<'pending' | 'actionable' | 'all'>('pending');
@@ -210,30 +224,54 @@ export default function AdminPaymentsQueueScreen() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending_admin_approval':
-        return { text: 'Pending', bg: 'bg-amber-50 border-amber-200', textCol: 'text-amber-700' };
+        return {
+          text: 'Pending',
+          bg: isDark ? 'bg-amber-950/30 border-amber-900/50' : 'bg-amber-50 border-amber-200',
+          textCol: isDark ? 'text-amber-400' : 'text-amber-700'
+        };
       case 'approved':
-        return { text: 'Approved', bg: 'bg-blue-50 border-blue-200', textCol: 'text-blue-700' };
+        return {
+          text: 'Approved',
+          bg: isDark ? 'bg-blue-950/30 border-blue-900/50' : 'bg-blue-50 border-blue-200',
+          textCol: isDark ? 'text-blue-400' : 'text-blue-700'
+        };
       case 'processing':
-        return { text: 'Processing', bg: 'bg-purple-50 border-purple-200', textCol: 'text-purple-700' };
+        return {
+          text: 'Processing',
+          bg: isDark ? 'bg-purple-950/30 border-purple-900/50' : 'bg-purple-50 border-purple-200',
+          textCol: isDark ? 'text-purple-400' : 'text-purple-700'
+        };
       case 'completed':
-        return { text: 'Completed', bg: 'bg-emerald-50 border-emerald-200', textCol: 'text-emerald-700' };
+        return {
+          text: 'Completed',
+          bg: isDark ? 'bg-emerald-950/30 border-emerald-900/50' : 'bg-emerald-50 border-emerald-200',
+          textCol: isDark ? 'text-emerald-400' : 'text-emerald-700'
+        };
       case 'rejected':
-        return { text: 'Rejected', bg: 'bg-red-50 border-red-200', textCol: 'text-red-700' };
+        return {
+          text: 'Rejected',
+          bg: isDark ? 'bg-red-950/30 border-red-900/50' : 'bg-red-50 border-red-200',
+          textCol: isDark ? 'text-red-400' : 'text-red-700'
+        };
       default:
-        return { text: status, bg: 'bg-slate-100 border-slate-250', textCol: 'text-slate-600' };
+        return {
+          text: status,
+          bg: isDark ? 'bg-slate-900/30 border-slate-800/50' : 'bg-slate-100 border-slate-250',
+          textCol: isDark ? 'text-slate-400' : 'text-slate-600'
+        };
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={['top', 'left', 'right']}>
+    <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top', 'left', 'right']}>
       {/* Top Header */}
-      <View className="px-4 py-3.5 border-b border-slate-100 bg-white">
-        <Text className="text-base font-bold text-slate-800">Payment Queue</Text>
-        <Text className="text-[10px] text-slate-400 mt-0.5">Manage and execute international payment requests</Text>
+      <View className={`px-4 py-3.5 border-b ${borderCard} ${bgCard}`}>
+        <Text className={`text-base font-bold ${textTitle}`}>Payment Queue</Text>
+        <Text className={`text-[10px] ${textMuted} mt-0.5`}>Manage and execute international payment requests</Text>
       </View>
 
       {/* Tabs */}
-      <View className="flex-row bg-white border-b border-slate-100 p-2 space-x-2">
+      <View style={{ gap: 8 }} className={`flex-row ${bgCard} border-b ${borderCard} p-2`}>
         {[
           { label: 'Pending Review', value: 'pending' as const },
           { label: 'Action Needed', value: 'actionable' as const },
@@ -244,13 +282,15 @@ export default function AdminPaymentsQueueScreen() {
             onPress={() => setFilterTab(tab.value)}
             className={`flex-1 py-2 items-center rounded-xl border ${
               filterTab === tab.value
-                ? 'bg-blue-50 border-blue-200'
-                : 'bg-white border-transparent'
+                ? isDark ? 'bg-blue-950/40 border-blue-800/60' : 'bg-blue-50 border-blue-200'
+                : isDark ? 'bg-[#121E42] border-transparent' : 'bg-white border-transparent'
             }`}
           >
             <Text
               className={`text-[11px] font-bold ${
-                filterTab === tab.value ? 'text-blue-900' : 'text-slate-500'
+                filterTab === tab.value
+                  ? isDark ? 'text-blue-400' : 'text-blue-900'
+                  : textMuted
               }`}
             >
               {tab.label}
@@ -271,23 +311,23 @@ export default function AdminPaymentsQueueScreen() {
             <ActivityIndicator size="large" color="#1E3A8A" />
           </View>
         ) : filteredPayments.length === 0 ? (
-          <View className="flex-1 justify-center items-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm mt-4">
+          <View className={`flex-1 justify-center items-center py-20 ${bgCard} rounded-3xl border ${borderCard} shadow-sm mt-4`}>
             <Ionicons name="checkmark-circle-outline" size={48} color="#10B981" />
-            <Text className="text-sm font-bold text-slate-800 mt-3">All Clear!</Text>
-            <Text className="text-xs text-slate-400 mt-1">No payment requests match this filter.</Text>
+            <Text className={`text-sm font-bold ${textTitle} mt-3`}>All Clear!</Text>
+            <Text className={`text-xs ${textMuted} mt-1`}>No payment requests match this filter.</Text>
           </View>
         ) : (
-          <View className="space-y-4">
+          <View style={{ gap: 16 }}>
             {filteredPayments.map((payment) => {
               const badge = getStatusBadge(payment.status);
 
               return (
-                <View key={payment._id} className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm space-y-4">
+                <View key={payment._id} style={{ gap: 16 }} className={`${bgCard} border ${borderCard} rounded-3xl p-5 shadow-sm`}>
                   {/* Top line */}
                   <View className="flex-row justify-between items-start">
                     <View className="flex-1 pr-2">
-                      <Text className="text-sm font-bold text-slate-850">{payment.recipientCompany}</Text>
-                      <Text className="text-[10px] text-slate-400 mt-0.5">
+                      <Text className={`text-sm font-bold ${textTitle}`}>{payment.recipientCompany}</Text>
+                      <Text className={`text-[10px] ${textMuted} mt-0.5`}>
                         Bank: {payment.recipientBank} ({payment.recipientBankCountry})
                       </Text>
                     </View>
@@ -297,33 +337,33 @@ export default function AdminPaymentsQueueScreen() {
                   </View>
 
                   {/* Amounts */}
-                  <View className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex-row justify-between">
+                  <View className={`${isDark ? 'bg-[#121E42]' : 'bg-slate-50'} border ${borderCard} rounded-2xl p-4 flex-row justify-between`}>
                     <View>
-                      <Text className="text-[9px] text-slate-400 uppercase font-semibold">Foreign Outflow</Text>
-                      <Text className="text-base font-bold text-slate-800 mt-1">
+                      <Text className={`text-[9px] ${textMuted} uppercase font-semibold`}>Foreign Outflow</Text>
+                      <Text className={`text-base font-bold ${textTitle} mt-1`}>
                         {formatCurrency(payment.foreignAmount, payment.foreignCurrency)}
                       </Text>
                     </View>
                     <View className="items-end">
-                      <Text className="text-[9px] text-slate-400 uppercase font-semibold">Equivalent NGN</Text>
-                      <Text className="text-base font-bold text-blue-900 mt-1">
+                      <Text className={`text-[9px] ${textMuted} uppercase font-semibold`}>Equivalent NGN</Text>
+                      <Text className={`text-base font-bold ${isDark ? 'text-blue-400' : 'text-blue-900'} mt-1`}>
                         {formatCurrency(payment.localAmount, 'NGN')}
                       </Text>
                     </View>
                   </View>
 
                   {/* Metadata and S3 errors */}
-                  <View className="space-y-1 pl-1">
-                    <Text className="text-[9px] text-slate-400">
+                  <View style={{ gap: 4 }} className="pl-1">
+                    <Text className={`text-[9px] ${textMuted}`}>
                       Acct Number: {payment.accountNumber} | SWIFT: {payment.recipientBankSwiftCode}
                     </Text>
-                    <Text className="text-[9px] text-slate-400">
+                    <Text className={`text-[9px] ${textMuted}`}>
                       Submitted: {payment.createdAt ? new Date(payment.createdAt).toLocaleDateString() : 'N/A'}
                     </Text>
 
                     {payment.reapStatus && (
-                      <View className="mt-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                        <Text className="text-[9px] font-bold text-slate-600">Reap Status: {payment.reapStatus}</Text>
+                      <View className={`mt-2 ${isDark ? 'bg-[#152757]' : 'bg-slate-50'} p-2 rounded-lg border ${borderCard}`}>
+                        <Text className={`text-[9px] font-bold ${textTitle}`}>Reap Status: {payment.reapStatus}</Text>
                         {(payment.reapError || payment.reapErrorMessage) && (
                           <Text className="text-[9px] text-red-500 font-semibold mt-0.5">
                             {payment.reapError || payment.reapErrorMessage}
@@ -334,22 +374,22 @@ export default function AdminPaymentsQueueScreen() {
                   </View>
 
                   {/* Operations Actions */}
-                  <View className="flex-row flex-wrap gap-2 pt-2 border-t border-slate-50">
+                  <View className={`flex-row flex-wrap gap-2 pt-2 border-t ${borderCard}`}>
                     <TouchableOpacity
                       onPress={() => handleViewInvoice(payment._id)}
-                      className="bg-white border border-slate-200 px-3 py-2.5 rounded-xl items-center justify-center flex-row flex-1"
+                      className={`${bgCard} border ${inputBorder} px-3 py-2.5 rounded-xl items-center justify-center flex-row flex-1`}
                     >
-                      <Feather name="file-text" size={12} color="#64748B" style={{ marginRight: 4 }} />
-                      <Text className="text-slate-600 font-bold text-[10px]">Invoice</Text>
+                      <Feather name="file-text" size={12} color={isDark ? '#94A3B8' : '#64748B'} style={{ marginRight: 4 }} />
+                      <Text className={`${isDark ? 'text-slate-300' : 'text-slate-650'} font-bold text-[10px]`}>Invoice</Text>
                     </TouchableOpacity>
 
                     {payment.status === 'pending_admin_approval' && (
                       <>
                         <TouchableOpacity
                           onPress={() => setSelectedReviewItem(payment)}
-                          className="bg-red-50 border border-red-200 px-3 py-2.5 rounded-xl items-center justify-center flex-row flex-1"
+                          className={`${isDark ? 'bg-red-950/20 border-red-900/40' : 'bg-red-50 border-red-200'} px-3 py-2.5 rounded-xl items-center justify-center flex-row flex-1`}
                         >
-                          <Text className="text-red-600 font-bold text-[10px]">Reject</Text>
+                          <Text className="text-red-650 font-bold text-[10px]">Reject</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -376,10 +416,10 @@ export default function AdminPaymentsQueueScreen() {
                       <TouchableOpacity
                         onPress={() => retryReapMutation.mutate(payment._id)}
                         disabled={retryReapMutation.isPending}
-                        className="bg-amber-55 bg-amber-50 border border-amber-200 px-3 py-2.5 rounded-xl items-center justify-center flex-row flex-1"
+                        className={`${isDark ? 'bg-amber-950/20 border-amber-900/40' : 'bg-amber-50 border border-amber-200'} px-3 py-2.5 rounded-xl items-center justify-center flex-row flex-1`}
                       >
-                        {retryReapMutation.isPending && <ActivityIndicator size="small" color="#B45309" className="mr-1" />}
-                        <Text className="text-amber-700 font-bold text-[10px]">Retry Reap</Text>
+                        {retryReapMutation.isPending && <ActivityIndicator size="small" color={isDark ? '#F59E0B' : '#B45309'} className="mr-1" />}
+                        <Text className={`${isDark ? 'text-amber-400' : 'text-amber-700'} font-bold text-[10px]`}>Retry Reap</Text>
                       </TouchableOpacity>
                     )}
 
@@ -409,38 +449,38 @@ export default function AdminPaymentsQueueScreen() {
         onRequestClose={() => setSelectedReviewItem(null)}
       >
         <View className="flex-1 bg-black/50 justify-end">
-          <View className="bg-white rounded-t-3xl p-6 space-y-4">
-            <View className="flex-row justify-between items-center border-b border-slate-100 pb-3 mb-1">
+          <View style={{ gap: 16 }} className={`${bgCard} rounded-t-3xl p-6`}>
+            <View className={`flex-row justify-between items-center border-b ${borderCard} pb-3 mb-1`}>
               <View>
-                <Text className="text-base font-bold text-slate-800">Reject Payment Request</Text>
-                <Text className="text-[10px] text-slate-400 mt-0.5">
+                <Text className={`text-base font-bold ${textTitle}`}>Reject Payment Request</Text>
+                <Text className={`text-[10px] ${textMuted} mt-0.5`}>
                   Enter rejection rationale for compliance records
                 </Text>
               </View>
               <TouchableOpacity onPress={() => setSelectedReviewItem(null)} className="p-1">
-                <Ionicons name="close" size={24} color="#64748B" />
+                <Ionicons name="close" size={24} color={isDark ? '#94A3B8' : '#64748B'} />
               </TouchableOpacity>
             </View>
 
-            <View className="space-y-2">
-              <Text className="text-xs font-semibold text-slate-700">Rejection Reason</Text>
+            <View style={{ gap: 8 }}>
+              <Text className={`text-xs font-semibold ${textTitle}`}>Rejection Reason</Text>
               <TextInput
                 value={rejectionReason}
                 onChangeText={setRejectionReason}
                 placeholder="State specific invoice issues, validation errors, or compliance warnings..."
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                 multiline={true}
                 numberOfLines={3}
-                className="bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl text-slate-900 text-xs font-medium h-20"
+                className={`${inputBg} border ${inputBorder} px-4 py-3 rounded-2xl ${textInputColor} text-xs font-medium h-20`}
               />
             </View>
 
             <View className="flex-row space-x-3 pt-2">
               <TouchableOpacity
                 onPress={() => setSelectedReviewItem(null)}
-                className="flex-1 bg-slate-100 rounded-xl items-center justify-center py-3"
+                className={`flex-1 ${isDark ? 'bg-slate-800' : 'bg-slate-100'} rounded-xl items-center justify-center py-3`}
               >
-                <Text className="text-slate-700 font-bold text-xs">Cancel</Text>
+                <Text className={`${isDark ? 'text-slate-350' : 'text-slate-700'} font-bold text-xs`}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
