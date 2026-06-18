@@ -39,6 +39,12 @@
         "projectId": "078cd510-89e5-4cf8-9820-3488ce389e3f"
       }
     },
-    "owner": "onowuckc"
+    "owner": "onowuckc",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/078cd510-89e5-4cf8-9820-3488ce389e3f"
+    }
   }
 }

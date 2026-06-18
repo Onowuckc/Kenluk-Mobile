@@ -428,13 +428,13 @@ export default function HistoryScreen() {
                           <View className="flex-row justify-between">
                             <Text className={`text-[10px] ${textMuted}`}>Exchange Rate:</Text>
                             <Text className={`text-[10px] font-bold ${textTitle}`}>
-                              1 {currentPayment.foreignCurrency} = ₦{currentPayment.exchangeRate.toLocaleString()}
+                              1 {currentPayment.foreignCurrency} = <Text style={{ fontWeight: '400' }}>₦</Text>{currentPayment.exchangeRate.toLocaleString()}
                             </Text>
                           </View>
                           <View className={`flex-row justify-between border-t ${isDark ? 'border-slate-800' : 'border-slate-200/50'} pt-2 mt-1`}>
                             <Text className={`text-[10px] ${textMuted}`}>Local Equivalency (NGN):</Text>
                             <Text className="text-xs font-bold text-blue-600">
-                              ₦{currentPayment.localAmount.toLocaleString()}
+                              <Text style={{ fontWeight: '400' }}>₦</Text>{currentPayment.localAmount.toLocaleString()}
                             </Text>
                           </View>
                         </View>

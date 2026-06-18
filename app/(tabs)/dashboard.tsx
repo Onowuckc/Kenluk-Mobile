@@ -10,9 +10,10 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
 
 import { RootState } from '../../src/redux/store';
 import { fetchWalletSummary } from '../../src/redux/slices/walletSlice';
@@ -40,6 +41,7 @@ export default function DashboardScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
+  const insets = useSafeAreaInsets();
 
   const { user } = useSelector((state: RootState) => state.auth);
   const { summary, loading: walletLoading } = useSelector((state: RootState) => state.wallet || { summary: null, loading: false });
@@ -184,10 +186,15 @@ export default function DashboardScreen() {
 
   const formatCurrency = (amount: number, code: string = 'NGN') => {
     const symbol = code === 'NGN' ? '₦' : '$';
-    return symbol + amount.toLocaleString('en-US', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    });
+    return (
+      <Text>
+        <Text style={{ fontWeight: '400' }}>{symbol}</Text>
+        {amount.toLocaleString('en-US', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        })}
+      </Text>
+    );
   };
 
   const utilizationRate = totalFunded > 0 ? Math.round((totalUsed / totalFunded) * 100) : 0;
@@ -200,6 +207,7 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top', 'left', 'right']}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 32 }}
         className="p-4"
@@ -259,9 +267,17 @@ export default function DashboardScreen() {
               </TouchableOpacity>
             </View>
 
-            <Text className="text-3xl font-bold text-white tracking-tight leading-none mb-1">
-              {formatCurrency(balance, currency)}
-            </Text>
+            <View className="flex-row items-baseline mb-1">
+              <Text className="text-xl text-white mr-0.5" style={{ fontWeight: '500' }}>
+                {currency === 'NGN' ? '₦' : '$'}
+              </Text>
+              <Text className="text-3xl font-bold text-white tracking-tight leading-none">
+                {balance.toLocaleString('en-US', {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                })}
+              </Text>
+            </View>
             <Text className="text-blue-300 text-[10px]">Available for vendor payments</Text>
           </LinearGradient>
           <View className="p-5">

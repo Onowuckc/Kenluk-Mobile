@@ -607,13 +607,13 @@ export default function PaymentsScreen() {
                 <View className="flex-row justify-between items-center">
                   <Text className={`text-[11px] ${textMuted}`}>Exchange Rate:</Text>
                   <Text className={`text-xs font-bold ${textTitle}`}>
-                    1 {foreignCurrency} = ₦{exchangeRate.toLocaleString()}
+                    1 {foreignCurrency} = <Text style={{ fontWeight: '400' }}>₦</Text>{exchangeRate.toLocaleString()}
                   </Text>
                 </View>
                 <View className={`flex-row justify-between items-center border-t ${borderCard} pt-2.5`}>
                   <Text className={`text-[11px] ${textMuted}`}>Amount in NGN:</Text>
                   <Text className="text-sm font-bold text-blue-500">
-                    ₦{localAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <Text style={{ fontWeight: '400' }}>₦</Text>{localAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </Text>
                 </View>
                 <Text className={`text-[9px] ${textMuted} leading-normal`}>
@@ -630,13 +630,13 @@ export default function PaymentsScreen() {
                   <View className="flex-row justify-between mb-1">
                     <Text className={`text-[10px] ${textMuted}`}>Available Wallet Balance:</Text>
                     <Text className={`text-[10px] font-bold ${textTitle}`}>
-                      ₦{(summary?.balance || 0).toLocaleString()}
+                      <Text style={{ fontWeight: '400' }}>₦</Text>{(summary?.balance || 0).toLocaleString()}
                     </Text>
                   </View>
                   <View className={`flex-row justify-between border-t ${borderCard} pt-1 mt-1`}>
                     <Text className={`text-[10px] ${textMuted}`}>Local Outflow Required:</Text>
                     <Text className={`text-[10px] font-bold ${textTitle}`}>
-                      ₦{localAmount.toLocaleString()}
+                      <Text style={{ fontWeight: '400' }}>₦</Text>{localAmount.toLocaleString()}
                     </Text>
                   </View>
 
@@ -644,7 +644,7 @@ export default function PaymentsScreen() {
                     <View className={`${isDark ? 'bg-red-950/20 border-red-900/40' : 'bg-red-50 border border-red-100'} p-2.5 rounded-xl flex-row items-center mt-3`}>
                       <Feather name="alert-circle" size={14} color="#EF4444" style={{ marginRight: 6 }} />
                       <Text className="text-red-650 text-[10px] font-semibold flex-1">
-                        Insufficient balance. You need an additional ₦{(localAmount - (summary?.balance || 0)).toLocaleString()} to process this payment.
+                        Insufficient balance. You need an additional <Text style={{ fontWeight: '400' }}>₦</Text>{(localAmount - (summary?.balance || 0)).toLocaleString()} to process this payment.
                       </Text>
                     </View>
                   ) : (
