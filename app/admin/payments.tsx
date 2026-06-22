@@ -172,6 +172,16 @@ export default function AdminPaymentsQueueScreen() {
     },
   });
 
+  const resendReceiptMutation = useMutation({
+    mutationFn: (paymentId: string) => paymentsApi.resendReceiptEmail(paymentId),
+    onSuccess: (res: any) => {
+      Alert.alert('Success', res?.message || 'Receipt email resent successfully.');
+    },
+    onError: (err: any) => {
+      Alert.alert('Error', err?.response?.data?.message || 'Failed to resend receipt email.');
+    },
+  });
+
   const handleApprove = (payment: PaymentRequest) => {
     Alert.alert(
       'Approve Request',
@@ -431,6 +441,18 @@ export default function AdminPaymentsQueueScreen() {
                       >
                         {completeMutation.isPending && <ActivityIndicator size="small" color="#ffffff" className="mr-1" />}
                         <Text className="text-white font-bold text-[10px]">Mark Completed</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {payment.status === 'completed' && (
+                      <TouchableOpacity
+                        onPress={() => resendReceiptMutation.mutate(payment._id)}
+                        disabled={resendReceiptMutation.isPending}
+                        className="bg-blue-600 px-3 py-2.5 rounded-xl items-center justify-center flex-row flex-1"
+                      >
+                        {resendReceiptMutation.isPending && <ActivityIndicator size="small" color="#ffffff" className="mr-1" />}
+                        <Feather name="mail" size={12} color="#ffffff" style={{ marginRight: 4 }} />
+                        <Text className="text-white font-bold text-[10px]">Resend Receipt</Text>
                       </TouchableOpacity>
                     )}
                   </View>

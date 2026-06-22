@@ -38,4 +38,9 @@ export const userApi = {
     const response = await api.put<{ message: string }>('/users/change-password', data);
     return response.data;
   },
+
+  registerPushToken: async (pushToken: string): Promise<{ message: string }> => {
+    const response = await api.put<{ message: string }>('/users/push-token', { pushToken });
+    return response.data;
+  },
 };

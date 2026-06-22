@@ -143,6 +143,10 @@ export const paymentsApi = {
     const response = await api.put(`/payments/${paymentId}/complete`, {});
     return response.data;
   },
+  resendReceiptEmail: async (paymentId: string) => {
+    const response = await api.post(`/payments/${paymentId}/resend-receipt`, {});
+    return response.data;
+  },
 };
 
 export const beneficiaryApi = {
