@@ -133,12 +133,26 @@ export default function PaymentsScreen() {
 
   const beneficiaries = beneficiariesData?.beneficiaries || [];
 
+  // Processing fee constant (USD only)
+  const PROCESSING_FEE_USD = 30;
+
   // Calculate local NGN Amount
   const localAmount = useMemo(() => {
     const amountVal = parseFloat(foreignAmount);
     if (isNaN(amountVal) || amountVal <= 0) return 0;
     return amountVal * exchangeRate;
   }, [foreignAmount, exchangeRate]);
+
+  // Fee breakdown (computed for display)
+  const feeBreakdown = useMemo(() => {
+    const amountVal = parseFloat(foreignAmount);
+    if (foreignCurrency !== 'USD' || isNaN(amountVal) || amountVal <= 0) return null;
+    return {
+      charged: amountVal,
+      fee: PROCESSING_FEE_USD,
+      beneficiaryReceives: Math.max(0, amountVal - PROCESSING_FEE_USD),
+    };
+  }, [foreignAmount, foreignCurrency]);
 
   // Sync wallet balance summary on mount and when loading amount step
   useEffect(() => {
@@ -621,6 +635,42 @@ export default function PaymentsScreen() {
                 </Text>
               </View>
 
+              {/* $30 Processing Fee Breakdown – USD only */}
+              {feeBreakdown && (
+                <View className={`${isDark ? 'bg-indigo-950/30 border-indigo-900/40' : 'bg-indigo-50 border-indigo-100'} border rounded-2xl p-4`}>
+                  <View className="flex-row items-center mb-3">
+                    <Text className={`text-[10px] font-bold ${isDark ? 'text-indigo-400' : 'text-indigo-700'} uppercase tracking-wider`}>
+                      💳  Processing Fee Breakdown
+                    </Text>
+                  </View>
+                  <View style={{ gap: 6 }}>
+                    <View className="flex-row justify-between items-center">
+                      <Text className={`text-[11px] ${textMuted}`}>Amount You Enter</Text>
+                      <Text className={`text-[11px] font-bold ${textTitle}`}>
+                        ${feeBreakdown.charged.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </Text>
+                    </View>
+                    <View className={`flex-row justify-between items-center border-t ${borderCard} pt-2`}>
+                      <Text className="text-[11px] text-red-500 font-semibold">− Processing Fee</Text>
+                      <Text className="text-[11px] font-bold text-red-500">
+                        − ${feeBreakdown.fee.toFixed(2)}
+                      </Text>
+                    </View>
+                    <View className={`flex-row justify-between items-center border-t ${borderCard} pt-2`}>
+                      <Text className={`text-[12px] font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                        ✅ Beneficiary Receives
+                      </Text>
+                      <Text className={`text-[13px] font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                        ${feeBreakdown.beneficiaryReceives.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text className={`text-[9px] ${textMuted} mt-2 leading-normal`}>
+                    A flat $30 USD processing fee applies to all USD payments.
+                  </Text>
+                </View>
+              )}
+
               {/* Wallet Validation Widget */}
               {!isCompanyPaymentAccount && localAmount > 0 && (
                 <View className={`${isDark ? 'bg-blue-950/20 border-blue-900/40' : 'bg-blue-50/40 border border-blue-100'} rounded-2xl p-4`}>
@@ -824,14 +874,32 @@ export default function PaymentsScreen() {
                         <Text className={`text-[10px] font-bold ${textTitle}`}>{recipientCompany}</Text>
                       </View>
                       <View className="flex-row justify-between">
-                        <Text className={`text-[10px] ${textMuted}`}>Amount:</Text>
+                        <Text className={`text-[10px] ${textMuted}`}>Amount Initiated:</Text>
                         <Text className={`text-[10px] font-bold ${textTitle}`}>
                           {getCurrencySymbol(foreignCurrency)}
                           {parseFloat(foreignAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })} ({foreignCurrency})
                         </Text>
                       </View>
-                      <View className="flex-row justify-between">
-                        <Text className={`text-[10px] ${textMuted}`}>Local Equiv:</Text>
+                      {feeBreakdown && (
+                        <>
+                          <View className="flex-row justify-between">
+                            <Text className="text-[10px] text-red-500 font-semibold">− Processing Fee:</Text>
+                            <Text className="text-[10px] font-bold text-red-500">
+                              − ${feeBreakdown.fee.toFixed(2)}
+                            </Text>
+                          </View>
+                          <View className={`flex-row justify-between border-t ${borderCard} pt-1.5`}>
+                            <Text className={`text-[10px] font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                              Beneficiary Receives:
+                            </Text>
+                            <Text className={`text-[10px] font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                              ${feeBreakdown.beneficiaryReceives.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            </Text>
+                          </View>
+                        </>
+                      )}
+                      <View className={`flex-row justify-between border-t ${borderCard} pt-1.5`}>
+                        <Text className={`text-[10px] ${textMuted}`}>NGN Equiv:</Text>
                         <Text className={`text-[10px] font-bold ${isDark ? 'text-blue-400' : 'text-blue-900'}`}>₦{localAmount.toLocaleString()}</Text>
                       </View>
                     </View>
@@ -877,11 +945,27 @@ export default function PaymentsScreen() {
                   <Text className={`text-[10px] font-bold ${textTitle}`}>{recipientCompany}</Text>
                 </View>
                 <View className="flex-row justify-between">
-                  <Text className={`text-[10px] ${textMuted}`}>Amount:</Text>
+                  <Text className={`text-[10px] ${textMuted}`}>Amount Initiated:</Text>
                   <Text className={`text-[10px] font-bold ${textTitle}`}>
-                    {getCurrencySymbol(foreignCurrency)}{parseFloat(foreignAmount).toLocaleString()} ({foreignCurrency})
+                    {getCurrencySymbol(foreignCurrency)}{parseFloat(foreignAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })} ({foreignCurrency})
                   </Text>
                 </View>
+                {feeBreakdown && (
+                  <>
+                    <View className="flex-row justify-between">
+                      <Text className="text-[10px] text-red-500 font-semibold">− Processing Fee:</Text>
+                      <Text className="text-[10px] font-bold text-red-500">− ${feeBreakdown.fee.toFixed(2)}</Text>
+                    </View>
+                    <View className={`flex-row justify-between border-t ${borderCard} pt-1`}>
+                      <Text className={`text-[10px] font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                        ✅ Beneficiary Receives:
+                      </Text>
+                      <Text className={`text-[10px] font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                        ${feeBreakdown.beneficiaryReceives.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </Text>
+                    </View>
+                  </>
+                )}
               </View>
 
               <View style={{ gap: 12 }} className="w-full">
