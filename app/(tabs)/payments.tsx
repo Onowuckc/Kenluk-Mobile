@@ -635,12 +635,12 @@ export default function PaymentsScreen() {
                 </Text>
               </View>
 
-              {/* $30 Processing Fee Breakdown – USD only */}
+              {/* $30 SWIFT Fee Breakdown – USD only */}
               {feeBreakdown && (
                 <View className={`${isDark ? 'bg-indigo-950/30 border-indigo-900/40' : 'bg-indigo-50 border-indigo-100'} border rounded-2xl p-4`}>
                   <View className="flex-row items-center mb-3">
                     <Text className={`text-[10px] font-bold ${isDark ? 'text-indigo-400' : 'text-indigo-700'} uppercase tracking-wider`}>
-                      💳  Processing Fee Breakdown
+                      💳  SWIFT Fee Breakdown
                     </Text>
                   </View>
                   <View style={{ gap: 6 }}>
@@ -651,7 +651,7 @@ export default function PaymentsScreen() {
                       </Text>
                     </View>
                     <View className={`flex-row justify-between items-center border-t ${borderCard} pt-2`}>
-                      <Text className="text-[11px] text-red-500 font-semibold">− Processing Fee</Text>
+                      <Text className="text-[11px] text-red-500 font-semibold">− SWIFT Fee</Text>
                       <Text className="text-[11px] font-bold text-red-500">
                         − ${feeBreakdown.fee.toFixed(2)}
                       </Text>
@@ -666,7 +666,7 @@ export default function PaymentsScreen() {
                     </View>
                   </View>
                   <Text className={`text-[9px] ${textMuted} mt-2 leading-normal`}>
-                    A flat $30 USD processing fee applies to all USD payments.
+                    A flat $30 USD SWIFT fee applies to all USD payments.
                   </Text>
                 </View>
               )}
@@ -883,7 +883,7 @@ export default function PaymentsScreen() {
                       {feeBreakdown && (
                         <>
                           <View className="flex-row justify-between">
-                            <Text className="text-[10px] text-red-500 font-semibold">− Processing Fee:</Text>
+                            <Text className="text-[10px] text-red-500 font-semibold">− SWIFT Fee:</Text>
                             <Text className="text-[10px] font-bold text-red-500">
                               − ${feeBreakdown.fee.toFixed(2)}
                             </Text>
@@ -953,7 +953,7 @@ export default function PaymentsScreen() {
                 {feeBreakdown && (
                   <>
                     <View className="flex-row justify-between">
-                      <Text className="text-[10px] text-red-500 font-semibold">− Processing Fee:</Text>
+                      <Text className="text-[10px] text-red-500 font-semibold">− SWIFT Fee:</Text>
                       <Text className="text-[10px] font-bold text-red-500">− ${feeBreakdown.fee.toFixed(2)}</Text>
                     </View>
                     <View className={`flex-row justify-between border-t ${borderCard} pt-1`}>
