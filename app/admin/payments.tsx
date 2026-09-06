@@ -65,6 +65,8 @@ export default function AdminPaymentsQueueScreen() {
   const [selectedReviewItem, setSelectedReviewItem] = useState<PaymentRequest | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
 
+  const [manualFxInput, setManualFxInput] = useState<string>('');
+
   // 1. Fetch all requests
   const {
     data: responseData,
@@ -82,7 +84,7 @@ export default function AdminPaymentsQueueScreen() {
   const filteredPayments = useMemo(() => {
     return payments.filter((item) => {
       if (filterTab === 'pending') {
-        return item.status === 'pending_admin_approval';
+        return item.status === 'pending_admin_approval' || item.status === 'compliance_hold';
       }
       if (filterTab === 'actionable') {
         return item.status === 'approved' || item.status === 'processing';
@@ -99,8 +101,9 @@ export default function AdminPaymentsQueueScreen() {
 
   // Mutations
   const approveMutation = useMutation({
-    mutationFn: (paymentId: string) => paymentsApi.reviewPayment(paymentId, { action: 'approve' }),
-    onSuccess: (res) => {
+    mutationFn: (data: { paymentId: string; manualFxRate?: number }) =>
+      paymentsApi.reviewPayment(data.paymentId, { action: 'approve', manualFxRate: data.manualFxRate }),
+    onSuccess: (res: any) => {
       queryClient.invalidateQueries({ queryKey: ['admin-all-payments-list'] });
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
       
@@ -110,9 +113,10 @@ export default function AdminPaymentsQueueScreen() {
       if (reapStatus && reapStatus !== 'sent') {
         Alert.alert('Approved (Warning)', `Payment approved, but Reap status is: ${reapStatus}. Error: ${reapError || 'None'}`);
       } else {
-        Alert.alert('Success', 'Payment approved and submitted to Reap.');
+        Alert.alert('Success', 'Payment approved with manual FX rate and sent to Reap.');
       }
       setSelectedReviewItem(null);
+      setManualFxInput('');
     },
     onError: (err: any) => {
       Alert.alert('Error', err?.response?.data?.message || 'Failed to approve payment.');
@@ -183,6 +187,7 @@ export default function AdminPaymentsQueueScreen() {
   });
 
   const handleApprove = (payment: PaymentRequest) => {
+    const fxRate = manualFxInput ? parseFloat(manualFxInput) : undefined;
     Alert.alert(
       'Approve Request',
       `Approve payment of ${payment.foreignCurrency} ${payment.foreignAmount.toLocaleString()} to ${payment.recipientCompany}?`,
@@ -190,7 +195,7 @@ export default function AdminPaymentsQueueScreen() {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Approve',
-          onPress: () => approveMutation.mutate(payment._id),
+          onPress: () => approveMutation.mutate({ paymentId: payment._id, manualFxRate: fxRate }),
         },
       ]
     );

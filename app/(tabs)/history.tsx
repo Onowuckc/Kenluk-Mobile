@@ -498,6 +498,20 @@ export default function HistoryScreen() {
                           </View>
 
                           <View className="flex-row justify-between">
+                            <Text className={`text-[10px] ${textMuted}`}>OhMyFinAI Report:</Text>
+                            <Text className="text-[10px] font-bold text-blue-500">
+                              {(currentPayment as any).complianceReportId || 'SCR-VERIFIED'}
+                            </Text>
+                          </View>
+
+                          <View className="flex-row justify-between">
+                            <Text className={`text-[10px] ${textMuted}`}>Compliance Action:</Text>
+                            <Text className={`text-[10px] font-bold ${(currentPayment as any).complianceAction === 'BLOCK' ? 'text-red-500' : 'text-emerald-500'} uppercase`}>
+                              {(currentPayment as any).complianceAction || 'CLEAR'}
+                            </Text>
+                          </View>
+
+                          <View className="flex-row justify-between">
                             <Text className={`text-[10px] ${textMuted}`}>Approved By:</Text>
                             <Text className={`text-[10px] font-bold ${textTitle}`}>
                               {currentPayment.approvedBy?.name || currentPayment.approvedBy || 'N/A'}

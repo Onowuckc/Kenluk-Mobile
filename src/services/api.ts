@@ -127,7 +127,7 @@ export const paymentsApi = {
     const response = await api.get('/payments/all');
     return { payments: response.data.data };
   },
-  reviewPayment: async (paymentId: string, data: { action: 'approve' | 'reject'; rejectionReason?: string }) => {
+  reviewPayment: async (paymentId: string, data: { action: 'approve' | 'reject'; rejectionReason?: string; manualFxRate?: number }) => {
     const response = await api.put(`/payments/${paymentId}/review`, data);
     return response.data;
   },
